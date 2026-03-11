@@ -1,0 +1,253 @@
+UPDATED WORKFLOW GUIDE - CONTENT TYPE SELECTION
+================================================
+
+MAJOR UPDATE: Content types are now SELECTABLE from the uploaded Excel file!
+
+HOW IT WORKS NOW:
+=================
+
+STEP 1: Upload Content Types.xlsx
+----------------------------------
+1. Upload your Content Types.xlsx file
+2. The file contains ALL available content types with their configurations
+3. You will see a table with checkboxes showing all available content types
+
+STEP 2: SELECT Content Types You Need
+--------------------------------------
+1. After upload, you see a checkbox table with all content types
+2. Each row shows:
+   ☑️ Checkbox | Content Type Name | Field Name | Product Field Name
+3. Select ONLY the content types you want to configure
+4. Use "Select All" or "Deselect All" buttons for convenience
+5. Selected rows are highlighted in light blue
+6. Counter shows: "X of Y content types selected"
+
+STEP 3: Proceed to Configuration
+---------------------------------
+1. Only SELECTED content types appear in Step 3 configuration
+2. Field Name and Product Field Name are AUTO-FILLED from Excel
+3. You only configure prompts and select attributes
+
+EXAMPLE WORKFLOW:
+=================
+
+CONTENT TYPES.XLSX FILE:
+------------------------
+| Content Type        | Field Name     | Product Field Name      |
+|---------------------|----------------|-------------------------|
+| title               | title          | gsaProductDetail        |
+| gsaHighlights       | gsaHighlights  | gsaProductHighlights    |
+| productDescription  | description    | productDescription      |
+| keywords            | keywords       | gsaKeywords             |
+| shortTitle          | shortTitle     | gsaShortTitle           |
+
+STEP 1: UPLOAD & SELECT
+------------------------
+
+After uploading Content Types.xlsx, you see:
+
+┌─────────────────────────────────────────────────────────────┐
+│ [Select All]  [Deselect All]                                │
+├────┬──────────────────┬───────────────┬─────────────────────┤
+│ ☑️ │ ☑ ALL            │               │                     │
+├────┼──────────────────┼───────────────┼─────────────────────┤
+│ ☑️ │ title            │ title         │ gsaProductDetail    │
+│ ☑️ │ gsaHighlights    │ gsaHighlights │ gsaProductHighlights│
+│ ☐  │ productDescription│description   │ productDescription  │
+│ ☑️ │ keywords         │ keywords      │ gsaKeywords         │
+│ ☐  │ shortTitle       │ shortTitle    │ gsaShortTitle       │
+└────┴──────────────────┴───────────────┴─────────────────────┘
+
+3 of 5 content types selected
+
+In this example:
+- User selected: title, gsaHighlights, keywords
+- User did NOT select: productDescription, shortTitle
+
+STEP 3: CONFIGURATION
+---------------------
+
+Only the 3 SELECTED content types appear:
+
+1️⃣ Content Type: title
+   Response Field Name: [title] ← AUTO-FILLED from Excel
+   Product Field Name: [gsaProductDetail] ← AUTO-FILLED from Excel
+
+2️⃣ Content Type: gsaHighlights
+   Response Field Name: [gsaHighlights] ← AUTO-FILLED from Excel
+   Product Field Name: [gsaProductHighlights] ← AUTO-FILLED from Excel
+
+3️⃣ Content Type: keywords
+   Response Field Name: [keywords] ← AUTO-FILLED from Excel
+   Product Field Name: [gsaKeywords] ← AUTO-FILLED from Excel
+
+❌ productDescription - NOT shown (not selected)
+❌ shortTitle - NOT shown (not selected)
+
+BENEFITS OF THIS APPROACH:
+===========================
+
+✅ FLEXIBLE SELECTION
+   - Load ALL available content types from Excel
+   - Select only the ones you need right now
+   - Can change selection anytime
+
+✅ CLEANER CONFIGURATION
+   - Only configure what you need
+   - Less scrolling in Step 3
+   - Faster workflow
+
+✅ REUSABLE EXCEL FILE
+   - Keep one master Content Types.xlsx with all types
+   - Select different combinations for different configs
+   - No need to maintain multiple Excel files
+
+✅ AUTO-POPULATION STILL WORKS
+   - Selected content types get Field Name auto-filled
+   - Product Field Name auto-filled
+   - No manual typing needed
+
+✅ EASY TO MODIFY
+   - Change your selection anytime in Step 1
+   - Add or remove content types
+   - Re-process and continue
+
+COMPLETE STEP-BY-STEP:
+=======================
+
+STEP 1: UPLOAD FILES
+--------------------
+
+1. Upload Taxonomy.xlsx
+   ✓ Categories extracted from sheet names
+   ✓ Attributes extracted from Row 6
+
+2. Upload Brand Voice document
+   ✓ Brand voice loaded
+
+3. Upload Content Types.xlsx
+   ✓ All content types loaded
+   ✓ Shows checkbox table
+
+4. SELECT Content Types:
+   - Check the ones you want to configure
+   - Uncheck the ones you don't need
+   - Use Select All / Deselect All buttons
+   - See selection counter update
+
+5. (Optional) Upload FieldName.txt
+   ✓ Enables dropdowns for field selection
+
+6. Click "Process & Continue →"
+
+STEP 2: REVIEW DATA
+-------------------
+
+1. Review extracted categories
+2. Review attributes for each category
+3. Click "Configure Settings →"
+
+STEP 3: CONFIGURE
+-----------------
+
+1. Global Settings (Store ID, locale, etc.)
+
+2. For Each SELECTED Content Type:
+   - Configure prompts (Main, Prefix, Suffix)
+   - Field Name: AUTO-FILLED ✓
+   - Product Field Name: AUTO-FILLED ✓
+   - Set other options (Min attrs, JSON, Strategy)
+   - Select attributes for each category
+
+3. Click "Generate JSON Configuration →"
+
+STEP 4: DOWNLOAD
+----------------
+
+1. Review JSON (contains only selected content types)
+2. Download configuration file
+3. Done!
+
+SELECTION FEATURES:
+===================
+
+✓ INDIVIDUAL CHECKBOXES
+  - Click any checkbox to select/deselect
+
+✓ SELECT ALL BUTTON
+  - Instantly select all available content types
+
+✓ DESELECT ALL BUTTON
+  - Clear all selections to start fresh
+
+✓ HEADER CHECKBOX
+  - Check/uncheck all at once from table header
+
+✓ VISUAL FEEDBACK
+  - Selected rows highlighted in light blue
+  - Checkbox state persists
+  - Counter shows selection count
+
+✓ LIVE UPDATE
+  - Counter updates immediately
+  - Status text shows selection
+  - Validation checks selection count
+
+USE CASES:
+==========
+
+USE CASE 1: QUICK CONFIGURATION
+--------------------------------
+- Load Content Types.xlsx with 10 content types
+- Select only 2 for quick testing
+- Configure and generate JSON
+- Later: Select more and regenerate
+
+USE CASE 2: PHASED ROLLOUT
+---------------------------
+- Week 1: Select "title" only
+- Week 2: Add "gsaHighlights"
+- Week 3: Add "keywords" and "description"
+- Same Excel file, different selections
+
+USE CASE 3: A/B TESTING
+------------------------
+- Config A: Select [title, keywords]
+- Config B: Select [shortTitle, gsaHighlights]
+- Generate separate JSON files
+- Test performance
+
+USE CASE 4: CATEGORY-SPECIFIC
+------------------------------
+- Different categories need different content types
+- Select relevant subset for each category group
+- Maintain one master Excel file
+
+TIPS:
+=====
+
+1. MAINTAIN ONE MASTER FILE
+   - Keep all possible content types in Content Types.xlsx
+   - Select what you need each time
+   - Easy to add new types later
+
+2. START SMALL
+   - First time: Select 1-2 content types
+   - Test and verify JSON output
+   - Then add more types
+
+3. USE DESCRIPTIVE NAMES
+   - In Excel, use clear content type names
+   - Easier to identify and select
+
+4. REVIEW BEFORE PROCEEDING
+   - Check selection counter
+   - Verify highlighted rows
+   - Ensure you selected what you need
+
+5. CHANGE ANYTIME
+   - You can go back to Step 1
+   - Change selection
+   - Re-process without re-uploading files
+
+This new selection system makes the workflow much more flexible and efficient!

@@ -1,0 +1,77 @@
+CONTENT TYPES EXCEL FILE FORMAT
+================================
+
+The Content Types.xlsx file should have the following structure:
+
+SHEET 1 (any name, e.g., "Content Types" or "Config")
+-------------------------------------------------------
+
+Required Columns:
+1. Content Type - The name of the content type (e.g., "title", "gsaHighlights", "productDescription")
+2. Field Name - The field name for the response (e.g., "title", "gsaHighlights")
+3. Product Field Name - The product database field name (e.g., "gsaProductDetail", "productTitle")
+
+EXAMPLE EXCEL STRUCTURE:
+========================
+
+| Content Type       | Field Name     | Product Field Name      |
+|--------------------|----------------|-------------------------|
+| title              | title          | gsaProductDetail        |
+| gsaHighlights      | gsaHighlights  | gsaProductHighlights    |
+| productTitle       | title          | productTitle            |
+| productDescription | description    | productDescription      |
+| keywords           | keywords       | gsaKeywords             |
+
+ALTERNATIVE COLUMN NAMES (all supported):
+=========================================
+
+For "Content Type":
+- Content Type
+- contentType
+- content_type
+
+For "Field Name":
+- Field Name
+- fieldName
+- field_name
+
+For "Product Field Name":
+- Product Field Name
+- productFieldName
+- product_field_name
+
+HOW THE APP USES THIS FILE:
+============================
+
+1. UPLOAD: You upload the Content Types.xlsx file in Step 1
+2. PARSING: The app reads all rows and extracts:
+   - Content Type names
+   - Field Name for each content type
+   - Product Field Name for each content type
+3. DISPLAY: Step 1 shows a table with all loaded content types and their configurations
+4. AUTO-POPULATE: In Step 3 (Configuration), the Response Field Name and Product Field Name
+   are automatically filled from the Excel data
+5. DROPDOWN (if FieldName.txt uploaded): If you also uploaded FieldName.txt, the fields
+   become dropdowns with the Excel values pre-selected
+
+BENEFITS:
+=========
+
+✓ No manual typing of content types
+✓ Automatic population of field names
+✓ Consistent configuration across all content types
+✓ Easy to manage multiple content types in Excel
+✓ Can update and re-upload if changes needed
+
+EXAMPLE WORKFLOW:
+=================
+
+1. Create Content Types.xlsx with your content types and field mappings
+2. Upload it in Step 1
+3. See all content types displayed in a table
+4. Proceed to Step 3
+5. Field Name and Product Field Name are already filled!
+6. Just configure prompts and select attributes
+7. Generate JSON
+
+This saves time and ensures accuracy!

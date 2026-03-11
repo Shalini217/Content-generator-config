@@ -1,0 +1,41 @@
+TAXONOMY EXCEL FILE FORMAT INSTRUCTIONS
+=========================================
+
+The taxonomy file must be an Excel file (.xlsx or .xls) with the following structure:
+
+1. SHEET NAMES = CATEGORIES
+   - Each sheet/tab name in your Excel file represents a category
+   - Example sheet names: "Envelopes-and-mailers", "Office-decor", "Breakroom-supplies"
+
+2. ROW 6 = ATTRIBUTES (JSON FORMAT)
+   - In each sheet, row 6 must contain a JSON structure with the attributes
+   - The JSON must be inside curly braces {}
+   - Format: {"attributes": ["attr1", "attr2", "attr3", ...]}
+
+EXAMPLE STRUCTURE:
+==================
+
+Sheet: Envelopes-and-mailers
+Row 6: {"attributes": ["type", "envelope_style", "mailer_style", "closure", "material", "color", "brand"]}
+
+Sheet: Office-decor
+Row 6: {"attributes": ["type", "frame_style", "brand", "color", "dimensions", "placement"]}
+
+Sheet: Breakroom-supplies
+Row 6: {"attributes": ["type", "style", "brand", "color", "material", "quantity"]}
+
+IMPORTANT NOTES:
+================
+- The JSON must be properly formatted with double quotes
+- The attributes array can span multiple cells in row 6
+- The parser will automatically concatenate all cells in row 6 to find the JSON
+- Sheet names will be used exactly as they appear (case-sensitive)
+- Empty sheets or sheets without valid JSON in row 6 will show a warning
+
+HOW THE APP PROCESSES THE FILE:
+================================
+1. Reads all sheet names → Creates categories
+2. For each sheet, reads row 6 → Extracts JSON from within {}
+3. Parses the JSON to get the attributes array
+4. Displays categories with their attributes for review
+5. Allows you to configure which attributes to use for each content type

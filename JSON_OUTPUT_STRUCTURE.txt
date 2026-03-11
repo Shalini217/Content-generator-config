@@ -1,0 +1,243 @@
+JSON OUTPUT STRUCTURE EXPLAINED
+=================================
+
+When you upload an Excel file with sheet names as categories, the system creates the following structure:
+
+EXCEL FILE STRUCTURE:
+---------------------
+Sheet 1: "Envelopes-and-mailers"
+  Row 6: {"attributes": ["type", "envelope_style", "material", "color", "brand"]}
+
+Sheet 2: "Office-decor"
+  Row 6: {"attributes": ["type", "frame_style", "color", "dimensions"]}
+
+Sheet 3: "Breakroom-supplies"
+  Row 6: {"attributes": ["type", "style", "material", "quantity"]}
+
+
+CONTENT TYPES ADDED:
+--------------------
+1. title
+2. gsaHighlights
+3. productTitle
+
+
+RESULTING JSON OUTPUT:
+----------------------
+{
+  "storeId": "staging_jamplus",
+  "supportedProducts": [],
+  "active": true,
+  "allowedServices": ["title_description_generation"],
+  "defaultLocale": "en-us",
+  "defaultService": "title_description_generation",
+  "generationConfigs": [
+
+    // CONTENT TYPE 1: "title"
+    {
+      "active": true,
+      "systemPromptSimple": {
+        "prompt": "Your prompt for title generation...",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "Output format and rules..."
+      },
+      "responseInJson": true,
+      "fallbackToParentPrompt": false,
+      "minimumRequiredAttributesCount": 3,
+      "responseFields": [
+        {
+          "fieldName": "title",
+          "productFieldName": "gsaProductDetail",
+          "conditions": []
+        }
+      ],
+      "productDataFieldsToUse": [],
+      "categories": {
+        // ALL 3 CATEGORIES APPEAR HERE
+        "Envelopes-and-mailers": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "envelope_style", "material", "color", "brand"]
+        },
+        "Office-decor": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "frame_style", "color", "dimensions"]
+        },
+        "Breakroom-supplies": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "style", "material", "quantity"]
+        }
+      },
+      "fetchSheetContent": false,
+      "sheetUrl": "your-excel-file.xlsx",
+      "generationStrategy": "gsaProductDetail",
+      "strategyOptions": {
+        "delimeter": ":",
+        "prefix": "velou_attribute"
+      }
+    },
+
+    // CONTENT TYPE 2: "gsaHighlights"
+    {
+      "active": true,
+      "systemPromptSimple": {
+        "prompt": "Your prompt for highlights generation...",
+        "attributesToUsePrefix": "Attribute to consider:",
+        "suffix": "Highlight rules and format..."
+      },
+      "responseInJson": true,
+      "fallbackToParentPrompt": false,
+      "minimumRequiredAttributesCount": 3,
+      "responseFields": [
+        {
+          "fieldName": "gsaHighlights",
+          "productFieldName": "gsaProductHighlights",
+          "conditions": []
+        }
+      ],
+      "productDataFieldsToUse": [],
+      "categories": {
+        // ALL 3 CATEGORIES APPEAR HERE TOO
+        "Envelopes-and-mailers": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "envelope_style", "material", "color", "brand"]
+        },
+        "Office-decor": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "frame_style", "color", "dimensions"]
+        },
+        "Breakroom-supplies": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "style", "material", "quantity"]
+        }
+      },
+      "fetchSheetContent": false,
+      "sheetUrl": "your-excel-file.xlsx",
+      "generationStrategy": "enhancedGeneration",
+      "strategyOptions": {
+        "contentContext": [],
+        "highlightingContext": ["discoveryDrivers"]
+      }
+    },
+
+    // CONTENT TYPE 3: "productTitle"
+    {
+      "active": true,
+      "systemPromptSimple": {
+        "prompt": "Your prompt for product title...",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "Rules for product title..."
+      },
+      "responseInJson": true,
+      "fallbackToParentPrompt": false,
+      "minimumRequiredAttributesCount": 2,
+      "responseFields": [
+        {
+          "fieldName": "title",
+          "productFieldName": "productTitle",
+          "conditions": []
+        }
+      ],
+      "productDataFieldsToUse": [],
+      "categories": {
+        // ALL 3 CATEGORIES APPEAR HERE AS WELL
+        "Envelopes-and-mailers": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "envelope_style", "material", "color", "brand"]
+        },
+        "Office-decor": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "frame_style", "color", "dimensions"]
+        },
+        "Breakroom-supplies": {
+          "active": true,
+          "systemPromptSimple": {
+            "prompt": "",
+            "attributesToUsePrefix": "",
+            "suffix": ""
+          },
+          "fallbackToParentPrompt": false,
+          "attributesToUse": ["type", "style", "material", "quantity"]
+        }
+      },
+      "fetchSheetContent": false,
+      "sheetUrl": "your-excel-file.xlsx",
+      "generationStrategy": "enhancedGeneration",
+      "strategyOptions": {
+        "contentContext": [],
+        "highlightingContext": ["discoveryDrivers"]
+      }
+    }
+  ],
+  "storeDefaultPromptConfig": {},
+  "allowCachedRecords": true,
+  "taxonomyId": ""
+}
+
+
+KEY POINTS:
+-----------
+1. Excel Sheet Names → Categories (extracted automatically)
+2. Row 6 in each sheet → Attributes for that category
+3. Each Content Type gets ALL categories in its "categories" object
+4. You can configure which attributes to use for each category within each content type
+5. Each category can have different selected attributes for different content types
+
+EXAMPLE USE CASE:
+-----------------
+For "title" content type:
+  - Envelopes-and-mailers: Use ["type", "envelope_style", "brand"]
+  - Office-decor: Use ["type", "frame_style", "color"]
+
+For "gsaHighlights" content type:
+  - Envelopes-and-mailers: Use ["material", "color", "features"]
+  - Office-decor: Use ["dimensions", "features", "brand"]
+
+This allows complete flexibility in attribute selection per category per content type!

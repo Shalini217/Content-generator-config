@@ -1,0 +1,250 @@
+NAVIGATION SYSTEM GUIDE
+=======================
+
+The application now features a complete tab-based navigation system that allows you to:
+- Navigate between steps
+- Go back to previous steps to review or modify
+- See which steps are completed
+- Jump directly to any completed step
+
+NAVIGATION TABS:
+================
+
+The navigation bar at the top has 4 tabs:
+
+1. 📤 Upload Files (Tab 1)
+   - Upload Excel taxonomy file
+   - Upload brand voice document
+   - Add content types
+   - Status: Always accessible
+
+2. 📊 Review Data (Tab 2)
+   - Review extracted categories
+   - See attributes for each category
+   - Status: Enabled after uploading files
+
+3. ⚙️ Configure (Tab 3)
+   - Configure global settings
+   - Set prompts for each content type
+   - Select attributes for each category
+   - Status: Enabled after reviewing data
+
+4. 📥 Download (Tab 4)
+   - Review generated JSON
+   - Download configuration file
+   - Status: Enabled after configuration
+
+TAB STATES:
+===========
+
+ACTIVE (Purple Gradient)
+- Currently viewing this tab
+- White circle with purple number
+- Bold text
+
+COMPLETED (Green)
+- Step has been completed
+- Green circle with white checkmark
+- Clickable to return to this step
+
+DISABLED (Grayed Out)
+- Step not yet accessible
+- Gray background
+- Cannot click until previous steps are complete
+
+ENABLED (Light Gray)
+- Step is accessible but not active
+- Can click to navigate to this step
+
+NAVIGATION BUTTONS:
+===================
+
+Each section has navigation buttons at the bottom:
+
+← Previous Button (Left)
+- Gray background
+- Takes you back to the previous step
+- Disabled on Step 1
+
+→ Next Button (Right)
+- Purple gradient background
+- Processes current step and moves forward
+- Text varies by step:
+  * "Process & Continue →" (Step 1)
+  * "Configure Settings →" (Step 2)
+  * "Generate JSON →" (Step 3)
+  * "Download JSON" (Step 4)
+
+HOW TO NAVIGATE:
+================
+
+FORWARD NAVIGATION:
+1. Complete current step
+2. Click the Next button at bottom
+3. OR click the next tab at top (if enabled)
+
+BACKWARD NAVIGATION:
+1. Click Previous button at bottom
+2. OR click any completed tab at top
+3. Review or modify previous settings
+4. Continue forward again
+
+DIRECT NAVIGATION:
+1. Click any enabled tab at top
+2. Instantly jump to that step
+3. Disabled tabs show an alert
+
+EXAMPLE WORKFLOW:
+=================
+
+Step 1: Upload Files
+→ Upload Excel file ✓
+→ Upload brand voice ✓
+→ Add 2 content types ✓
+→ Click "Process & Continue →"
+→ Tab 2 unlocks, Tab 1 turns green
+
+Step 2: Review Data
+→ Review 3 categories extracted
+→ See all attributes listed
+→ Click "← Back to Upload" to change files
+→ OR click "Configure Settings →"
+→ Tab 3 unlocks, Tab 2 turns green
+
+Step 3: Configure
+→ Set global settings
+→ Configure Content Type 1
+→ Select attributes for each category
+→ Click "← Back to Review" to check data
+→ OR click "Generate JSON →"
+→ Tab 4 unlocks, Tab 3 turns green
+
+Step 4: Download
+→ Review JSON output
+→ Click "📥 Download JSON" to save
+→ Click "← Back to Configure" to modify
+→ OR click "🔄 Start Over" to reset
+
+NAVIGATION FEATURES:
+====================
+
+✅ SMART TAB ENABLING
+- Tabs unlock sequentially
+- Can't skip steps
+- Must complete previous step first
+
+✅ SMOOTH SCROLLING
+- Automatically scrolls to top when changing tabs
+- Smooth animation
+
+✅ STATE PRESERVATION
+- Previous steps remain accessible
+- Can go back and modify settings
+- Changes are preserved
+
+✅ VISUAL FEEDBACK
+- Active tab has purple gradient
+- Completed tabs are green
+- Disabled tabs are grayed out
+- Clear visual hierarchy
+
+✅ KEYBOARD FRIENDLY
+- Tab order follows logical flow
+- Can navigate with keyboard
+
+TIPS FOR NAVIGATION:
+====================
+
+1. REVIEW BEFORE PROCEEDING
+   - Always review extracted data in Step 2
+   - Check if categories and attributes are correct
+   - Go back to Step 1 if needed
+
+2. SAVE TIME WITH DIRECT NAVIGATION
+   - Click completed tabs to jump back
+   - No need to go through all steps
+   - Quick access to any section
+
+3. ITERATIVE CONFIGURATION
+   - Configure first content type
+   - Generate JSON to preview
+   - Go back to add more content types
+   - Regenerate JSON
+
+4. VERIFY AT EACH STEP
+   - Tab 1: Check all files uploaded
+   - Tab 2: Verify categories extracted
+   - Tab 3: Review all configurations
+   - Tab 4: Inspect final JSON
+
+5. USE BACK BUTTON STRATEGICALLY
+   - Spotted a mistake? Click "← Previous"
+   - Need to change Excel file? Go to Tab 1
+   - Want to add content type? Return to Tab 1
+
+NAVIGATION STATES DIAGRAM:
+===========================
+
+Initial State:
+[Tab 1: ACTIVE] [Tab 2: DISABLED] [Tab 3: DISABLED] [Tab 4: DISABLED]
+
+After Step 1:
+[Tab 1: COMPLETED] [Tab 2: ACTIVE] [Tab 3: DISABLED] [Tab 4: DISABLED]
+
+After Step 2:
+[Tab 1: COMPLETED] [Tab 2: COMPLETED] [Tab 3: ACTIVE] [Tab 4: DISABLED]
+
+After Step 3:
+[Tab 1: COMPLETED] [Tab 2: COMPLETED] [Tab 3: COMPLETED] [Tab 4: ACTIVE]
+
+All Steps Complete:
+[Tab 1: COMPLETED] [Tab 2: COMPLETED] [Tab 3: COMPLETED] [Tab 4: COMPLETED]
+(All tabs clickable, can navigate anywhere)
+
+COMMON NAVIGATION PATTERNS:
+============================
+
+LINEAR WORKFLOW (First Time):
+Tab 1 → Tab 2 → Tab 3 → Tab 4
+
+REVIEW & MODIFY:
+Tab 1 → Tab 2 → Tab 1 (modify) → Tab 2 → Tab 3 → Tab 4
+
+ITERATIVE CONFIGURATION:
+Tab 1 → Tab 2 → Tab 3 → Tab 4 → Tab 3 (add more) → Tab 4
+
+QUICK PREVIEW:
+Tab 1 → Tab 2 → Tab 3 (minimal config) → Tab 4 (preview) → Tab 3 (refine)
+
+ERROR CORRECTION:
+Tab 1 → Tab 2 (error spotted) → Tab 1 (fix) → Tab 2 → Tab 3 → Tab 4
+
+BENEFITS OF TAB NAVIGATION:
+============================
+
+✨ USER FRIENDLY
+- Intuitive interface
+- Clear progress indication
+- Easy to understand
+
+⚡ EFFICIENT
+- Jump between sections quickly
+- No need to complete workflow linearly
+- Direct access to any step
+
+🔄 FLEXIBLE
+- Go back anytime
+- Modify previous settings
+- Non-destructive navigation
+
+📊 VISUAL CLARITY
+- See progress at a glance
+- Know which steps are complete
+- Understand current position
+
+🎯 ERROR PREVENTION
+- Can't skip required steps
+- Clear validation messages
+- Guided workflow
+
+The navigation system makes the configuration process smooth and efficient!

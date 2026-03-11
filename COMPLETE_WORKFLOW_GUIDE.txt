@@ -1,0 +1,339 @@
+COMPLETE WORKFLOW GUIDE
+========================
+
+This guide explains how to use the Content Configuration Generator with all the new features.
+
+REQUIRED FILES:
+===============
+
+1. **Taxonomy.xlsx** (REQUIRED)
+   - Excel file with sheet names as categories
+   - Row 6 in each sheet contains JSON: {"attributes": ["attr1", "attr2", ...]}
+
+2. **Brand Voice Document** (REQUIRED)
+   - .txt, .doc, or .docx file
+   - Contains your brand voice guidelines
+
+3. **Content Types.xlsx** (REQUIRED - NEW!)
+   - Excel file with content type configurations
+   - Columns: Content Type | Field Name | Product Field Name
+   - Example row: title | title | gsaProductDetail
+
+4. **FieldName.txt** (OPTIONAL)
+   - Text file with field names for dropdowns
+   - Can be JSON or plain text format
+   - Makes field selection easier with dropdowns
+
+STEP-BY-STEP WORKFLOW:
+======================
+
+STEP 1: UPLOAD FILES
+--------------------
+
+1. Open content-config-generator.html in your browser
+
+2. Upload Taxonomy Excel File:
+   - Click "Taxonomy Excel File" box
+   - Select your taxonomy.xlsx file
+   - Example structure:
+     * Sheet: "Envelopes-and-mailers"
+     * Row 6: {"attributes": ["type", "envelope_style", "color", "brand"]}
+
+3. Upload Brand Voice Document:
+   - Click "Brand Voice Document" box
+   - Select your brand voice .txt/.doc/.docx file
+
+4. Upload Content Types Configuration:
+   - Click "Content Types Configuration" box
+   - Select your Content Types.xlsx file
+   - You'll see a table showing all content types with their field mappings
+
+5. Upload Field Names (Optional):
+   - Click "Field Names (Optional)" box
+   - Select your FieldName.txt file
+   - This enables dropdowns in Step 3
+
+6. Click "Process & Continue →"
+
+STEP 2: REVIEW EXTRACTED DATA
+------------------------------
+
+1. Review Categories:
+   - See all categories extracted from taxonomy Excel (sheet names)
+   - See all attributes for each category (from Row 6)
+
+2. Verify Data:
+   - Check if categories are correct
+   - Check if attributes are complete
+   - If not correct, go back to Step 1 and re-upload
+
+3. Click "Configure Settings →"
+
+STEP 3: CONFIGURE GENERATION SETTINGS
+--------------------------------------
+
+1. Global Settings:
+   - Store ID: e.g., "staging_jamplus"
+   - Default Locale: e.g., "en-us"
+   - Default Service: e.g., "title_description_generation"
+   - Allowed Services: comma-separated list
+
+2. For Each Content Type (loaded from Content Types.xlsx):
+
+   A. CONTENT TYPE HEADER
+      - Shows: "Content Type: title" (automatically loaded)
+
+   B. ACTIVE TOGGLE
+      - Turn on/off this content type
+
+   C. SYSTEM PROMPT CONFIGURATION
+      - Main Prompt: Full AI instruction
+        Example: "You are an expert google ads copywriter..."
+
+      - Attributes Prefix: Text before attributes
+        Example: "**Important** only consider following attributes:"
+
+      - Suffix: Output format and rules
+        Example: "Output: JSON {\"title\": \"...\"}"
+
+   D. RESPONSE CONFIGURATION (AUTO-FILLED!)
+      - Response Field Name: AUTO-POPULATED from Excel
+        * If FieldName.txt uploaded: Shows as dropdown with value pre-selected
+        * If not: Shows as text input with value pre-filled
+
+      - Product Field Name: AUTO-POPULATED from Excel
+        * If FieldName.txt uploaded: Shows as dropdown with value pre-selected
+        * If not: Shows as text input with value pre-filled
+
+      - Min Required Attributes: Set minimum (default: 3)
+      - Response In JSON: Toggle (default: ON)
+      - Fallback To Parent Prompt: Toggle (default: OFF)
+      - Generation Strategy: Select from dropdown
+
+   E. CATEGORY-LEVEL CONFIGURATION
+      - For EACH category extracted from Taxonomy Excel:
+
+        1. Click category header to expand
+        2. Set Active toggle (default: ON)
+        3. Set Fallback toggle (default: OFF)
+        4. SELECT ATTRIBUTES:
+           - Click "Select All" to include all
+           - Click "Deselect All" to clear
+           - Check individual boxes as needed
+        5. Counter shows "X selected"
+
+3. Click "Generate JSON Configuration →"
+
+STEP 4: DOWNLOAD CONFIGURATION
+-------------------------------
+
+1. Review Generated JSON:
+   - See complete JSON structure
+   - Verify all settings are correct
+
+2. Download:
+   - Click "Download JSON" button
+   - File saved as: generation-config-[timestamp].json
+
+3. Start Over (if needed):
+   - Click "Start Over" to reset and begin again
+
+EXAMPLE SCENARIO:
+=================
+
+FILES YOU HAVE:
+---------------
+
+1. Taxonomy.xlsx:
+   - Sheet 1: "Envelopes-and-mailers"
+     Row 6: {"attributes": ["type", "envelope_style", "material", "color", "brand"]}
+   - Sheet 2: "Office-decor"
+     Row 6: {"attributes": ["type", "frame_style", "dimensions", "color"]}
+
+2. Brand-Voice.txt:
+   - "Our brand is professional, modern, and customer-focused..."
+
+3. Content Types.xlsx:
+   | Content Type   | Field Name     | Product Field Name    |
+   |----------------|----------------|-----------------------|
+   | title          | title          | gsaProductDetail      |
+   | gsaHighlights  | gsaHighlights  | gsaProductHighlights  |
+
+4. FieldName.txt:
+   {
+     "responseFields": ["title", "gsaHighlights", "description"],
+     "productFields": ["gsaProductDetail", "productTitle", "gsaProductHighlights"]
+   }
+
+WORKFLOW:
+---------
+
+STEP 1:
+- Upload Taxonomy.xlsx → ✓ 2 categories extracted
+- Upload Brand-Voice.txt → ✓ Brand voice loaded
+- Upload Content Types.xlsx → ✓ 2 content types loaded
+  Table shows:
+  | title         | title         | gsaProductDetail     |
+  | gsaHighlights | gsaHighlights | gsaProductHighlights |
+- Upload FieldName.txt → ✓ Field names loaded for dropdowns
+- Click "Process & Continue →"
+
+STEP 2:
+- Review Categories:
+  ✓ Envelopes-and-mailers (5 attributes)
+  ✓ Office-decor (4 attributes)
+- Click "Configure Settings →"
+
+STEP 3:
+- Set Global Settings (Store ID, locale, etc.)
+
+- Configure "title" content type:
+  * Main Prompt: "Generate optimized product titles..."
+  * Attributes Prefix: "**Important** only consider:"
+  * Response Field Name: [Dropdown with "title" pre-selected]
+  * Product Field Name: [Dropdown with "gsaProductDetail" pre-selected]
+  * For "Envelopes-and-mailers": Select [type, envelope_style, brand]
+  * For "Office-decor": Select [type, frame_style, color]
+
+- Configure "gsaHighlights" content type:
+  * Main Prompt: "Generate product highlights..."
+  * Attributes Prefix: "Attributes to consider:"
+  * Response Field Name: [Dropdown with "gsaHighlights" pre-selected]
+  * Product Field Name: [Dropdown with "gsaProductHighlights" pre-selected]
+  * For "Envelopes-and-mailers": Select [material, color, features]
+  * For "Office-decor": Select [dimensions, features]
+
+- Click "Generate JSON Configuration →"
+
+STEP 4:
+- Review JSON (shows all configurations)
+- Click "Download JSON"
+- Done! ✓
+
+RESULTING JSON STRUCTURE:
+==========================
+
+{
+  "storeId": "staging_jamplus",
+  "generationConfigs": [
+    {
+      // title content type
+      "systemPromptSimple": {
+        "prompt": "Generate optimized product titles...",
+        "attributesToUsePrefix": "**Important** only consider:",
+        "suffix": "..."
+      },
+      "responseFields": [{
+        "fieldName": "title",  // From Content Types.xlsx
+        "productFieldName": "gsaProductDetail"  // From Content Types.xlsx
+      }],
+      "categories": {
+        "Envelopes-and-mailers": {
+          "attributesToUse": ["type", "envelope_style", "brand"]
+        },
+        "Office-decor": {
+          "attributesToUse": ["type", "frame_style", "color"]
+        }
+      }
+    },
+    {
+      // gsaHighlights content type
+      "systemPromptSimple": {
+        "prompt": "Generate product highlights...",
+        "attributesToUsePrefix": "Attributes to consider:",
+        "suffix": "..."
+      },
+      "responseFields": [{
+        "fieldName": "gsaHighlights",  // From Content Types.xlsx
+        "productFieldName": "gsaProductHighlights"  // From Content Types.xlsx
+      }],
+      "categories": {
+        "Envelopes-and-mailers": {
+          "attributesToUse": ["material", "color", "features"]
+        },
+        "Office-decor": {
+          "attributesToUse": ["dimensions", "features"]
+        }
+      }
+    }
+  ]
+}
+
+KEY BENEFITS OF NEW WORKFLOW:
+==============================
+
+✅ AUTOMATIC CONTENT TYPE LOADING
+   - No manual typing of content types
+   - Upload Excel file and they're all loaded
+
+✅ AUTO-POPULATED FIELD NAMES
+   - Field Name auto-filled from Excel
+   - Product Field Name auto-filled from Excel
+   - Reduces errors and saves time
+
+✅ DROPDOWN SELECTION (with FieldName.txt)
+   - Field names shown as dropdowns
+   - Excel values automatically pre-selected
+   - Easy to change if needed
+
+✅ CONSISTENCY
+   - All content types configured from one source
+   - Field mappings consistent across app
+
+✅ EASY UPDATES
+   - Change Content Types.xlsx
+   - Re-upload
+   - All configurations updated
+
+✅ LESS ERRORS
+   - No typos in field names
+   - Pre-configured mappings
+   - Validated structure
+
+TIPS FOR SUCCESS:
+=================
+
+1. PREPARE EXCEL FILES FIRST
+   - Create Taxonomy.xlsx with all categories and attributes
+   - Create Content Types.xlsx with all content type mappings
+   - Verify structure before uploading
+
+2. USE FIELDNAME.TXT FOR EFFICIENCY
+   - Create a comprehensive list of all field names
+   - Enables dropdown selection
+   - Makes configuration faster
+
+3. REVIEW AT EACH STEP
+   - Step 2: Verify categories and attributes
+   - Step 3: Review auto-populated fields
+   - Step 4: Check final JSON
+
+4. START SMALL
+   - Test with 1-2 content types first
+   - Verify JSON output
+   - Then add more content types
+
+5. SAVE YOUR FILES
+   - Keep all input files (Excel, txt, doc)
+   - Save generated JSON
+   - Easy to regenerate or modify later
+
+TROUBLESHOOTING:
+================
+
+ISSUE: Content types not loading
+FIX: Check Content Types.xlsx has columns: "Content Type", "Field Name", "Product Field Name"
+
+ISSUE: Field names not auto-populating
+FIX: Verify Content Types.xlsx has values in Field Name and Product Field Name columns
+
+ISSUE: Dropdowns not showing
+FIX: Make sure FieldName.txt is uploaded and parsed successfully
+
+ISSUE: Categories not extracted
+FIX: Check Taxonomy.xlsx has Row 6 with valid JSON in each sheet
+
+ISSUE: Attributes missing
+FIX: Verify Row 6 JSON format: {"attributes": ["attr1", "attr2"]}
+
+Now you have a complete, efficient workflow for generating content configurations!

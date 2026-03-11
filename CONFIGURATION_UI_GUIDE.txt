@@ -1,0 +1,190 @@
+CONFIGURATION FRONT-END GUIDE
+==============================
+
+The enhanced configuration interface has been designed to make it easy to:
+1. Configure prompts for each content type
+2. Select attributes for each category
+3. Understand the JSON structure
+
+NEW FEATURES:
+=============
+
+1. ENHANCED VISUAL LAYOUT
+   - Gradient headers for each content type
+   - Color-coded sections with visual dividers
+   - Clear hierarchy showing: Content Type → Categories → Attributes
+
+2. COLLAPSIBLE CATEGORY SECTIONS
+   - Click on any category header to expand/collapse
+   - Shows attribute count and selected count in header
+   - Keeps interface clean and organized
+
+3. HELPER TEXT & TOOLTIPS
+   - Blue info boxes explain what each section does
+   - Placeholder text in inputs shows examples
+   - Small helper text under fields explains their purpose
+
+4. SELECT ALL / DESELECT ALL BUTTONS
+   - Quickly select or deselect all attributes for a category
+   - Saves time when configuring multiple categories
+
+5. LIVE ATTRIBUTE COUNTER
+   - Shows how many attributes are selected
+   - Updates in real-time as you check/uncheck boxes
+
+6. IMPROVED PROMPT CONFIGURATION
+   - Larger text areas for prompts
+   - Clear labels: "Main Prompt", "Attributes Prefix", "Suffix"
+   - Better organized with visual dividers
+
+7. STRUCTURE VISUALIZATION
+   - Visual diagram showing JSON structure at top of config page
+   - Makes it clear that all categories appear under each content type
+
+CONFIGURATION WORKFLOW:
+=======================
+
+STEP 1: Global Settings
+-----------------------
+- Store ID: Your store identifier
+- Default Locale: e.g., "en-us"
+- Default Service: e.g., "title_description_generation"
+- Allowed Services: Comma-separated list
+
+STEP 2: Configure Each Content Type
+------------------------------------
+For each content type you added (e.g., "title", "gsaHighlights"):
+
+A. ACTIVE TOGGLE
+   - Turn on/off this content type
+
+B. SYSTEM PROMPT CONFIGURATION
+   - Main Prompt: Full AI instruction
+     Example: "You are an expert google ads copywriter..."
+
+   - Attributes Prefix: Text shown before attributes
+     Example: "**Important** only consider following attributes:"
+
+   - Suffix: Rules and output format
+     Example: "Keep it concise. Output: JSON {...}"
+
+C. RESPONSE CONFIGURATION
+   - Response Field Name: JSON key (e.g., "title")
+   - Product Field Name: Database field (e.g., "gsaProductDetail")
+   - Min Required Attributes: Minimum number (e.g., 3)
+   - Response In JSON: Toggle (usually ON)
+   - Fallback To Parent Prompt: Toggle (usually OFF)
+   - Generation Strategy: Dropdown (gsaProductDetail / enhancedGeneration)
+
+D. CATEGORY-LEVEL CONFIGURATION
+   For EACH category extracted from your Excel:
+
+   1. Click category header to expand
+   2. Set Active toggle (ON by default)
+   3. Set Fallback toggle (OFF by default)
+   4. SELECT ATTRIBUTES:
+      - Click "Select All" to include all attributes
+      - Click "Deselect All" to start fresh
+      - Check individual boxes for specific attributes
+   5. Live counter shows "X selected"
+
+STEP 3: Generate JSON
+---------------------
+- Click "Generate JSON Configuration"
+- Review the output in the preview
+- Click "Download Configuration JSON"
+
+EXAMPLE CONFIGURATION:
+======================
+
+Content Type: "title"
+---------------------
+Main Prompt: "Generate optimized product titles..."
+Attributes Prefix: "**Important** only consider:"
+Suffix: "Output format: {\"title\": \"...\"}"
+
+Categories (ALL extracted categories appear here):
+  ├── Envelopes-and-mailers
+  │   └── Selected: type, envelope_style, color, brand
+  ├── Office-decor
+  │   └── Selected: type, frame_style, dimensions, color
+  └── Breakroom-supplies
+      └── Selected: type, style, material, quantity
+
+Content Type: "gsaHighlights"
+------------------------------
+Main Prompt: "Generate product highlights..."
+Attributes Prefix: "Attributes to consider:"
+Suffix: "Output: {\"gsaHighlights\": \"[...]\"}"
+
+Categories (SAME categories, different attribute selection):
+  ├── Envelopes-and-mailers
+  │   └── Selected: material, features, embellishment, graphic
+  ├── Office-decor
+  │   └── Selected: features, placement, decor_style
+  └── Breakroom-supplies
+      └── Selected: features, care, embellishment
+
+RESULTING JSON STRUCTURE:
+==========================
+
+{
+  "generationConfigs": [
+    {
+      // Content Type: "title"
+      "systemPromptSimple": {
+        "prompt": "Generate optimized product titles...",
+        "attributesToUsePrefix": "**Important** only consider:",
+        "suffix": "Output format: {\"title\": \"...\"}"
+      },
+      "categories": {
+        "Envelopes-and-mailers": {
+          "attributesToUse": ["type", "envelope_style", "color", "brand"]
+        },
+        "Office-decor": {
+          "attributesToUse": ["type", "frame_style", "dimensions", "color"]
+        },
+        "Breakroom-supplies": {
+          "attributesToUse": ["type", "style", "material", "quantity"]
+        }
+      }
+    },
+    {
+      // Content Type: "gsaHighlights"
+      "systemPromptSimple": {
+        "prompt": "Generate product highlights...",
+        "attributesToUsePrefix": "Attributes to consider:",
+        "suffix": "Output: {\"gsaHighlights\": \"[...]\"}"
+      },
+      "categories": {
+        "Envelopes-and-mailers": {
+          "attributesToUse": ["material", "features", "embellishment", "graphic"]
+        },
+        "Office-decor": {
+          "attributesToUse": ["features", "placement", "decor_style"]
+        },
+        "Breakroom-supplies": {
+          "attributesToUse": ["features", "care", "embellishment"]
+        }
+      }
+    }
+  ]
+}
+
+KEY POINTS:
+===========
+✓ All categories appear under EACH content type
+✓ You can select different attributes per category per content type
+✓ Collapsible sections keep the interface clean
+✓ Visual feedback shows selected count in real-time
+✓ Structure diagram helps understand the final JSON
+
+TIPS:
+=====
+1. Start with the first category expanded to understand the layout
+2. Use "Select All" as a starting point, then deselect unwanted attributes
+3. Save your configuration frequently
+4. Test with a small number of content types first
+5. Refer to the structure diagram when unsure
+
+The configuration front-end is now ready to use!

@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Config Builder — Workspace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ── Dark Workspace Theme ─────────────────────────────────────── */
+        :root {
+            --bg:          #0d1117;
+            --surface:     #161b27;
+            --surface-2:   #1c2333;
+            --surface-3:   #21283a;
+            --border:      #2d3748;
+            --border-soft: #1f2d40;
+            --accent:      #6366f1;
+            --accent-2:    #7c3aed;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --text:        #e6edf3;
+            --text-2:      #94a3b8;
+            --text-muted:  #5c6e82;
+            --success:     #34d399;
+            --success-bg:  rgba(52, 211, 153, 0.08);
+            --error:       #f87171;
+            --error-bg:    rgba(248, 113, 113, 0.08);
+            --warn:        #fbbf24;
+            --warn-bg:     rgba(251, 191, 36, 0.08);
+            --info:        #60a5fa;
+            --info-bg:     rgba(96, 165, 250, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 28px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* subtle grid overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border-soft) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .dot {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 50%;
+            animation: float 25s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); opacity: 0.4; }
+            25%  { transform: translate(80px, 80px); opacity: 0.6; }
+            50%  { transform: translate(160px, 0); opacity: 0.3; }
+            75%  { transform: translate(80px, -80px); opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ─────────────────────────────────────────────────── */
+        .header {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: var(--text-2);
+        }
+
+        /* ── Step indicator ─────────────────────────────────────────── */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .step.active  { opacity: 1; color: var(--text); }
+        .step.completed { opacity: 0.85; color: var(--text-2); }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .step.active .step-number {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 14px var(--accent-glow);
+        }
+
+        .step.completed .step-number {
+            background: var(--surface-3);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .step-text { font-size: 0.88rem; font-weight: 500; }
+
+        /* ── Cards ──────────────────────────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            margin-bottom: 24px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            border-color: #3d4f66;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        /* ── Upload card ────────────────────────────────────────────── */
+        .upload-card {
+            border: 2px dashed var(--border);
+            background: var(--surface-2);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            padding: 30px;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-card:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.06);
+        }
+
+        .upload-card.success {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+
+        .upload-icon {
+            font-size: 2.6rem;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 8px rgba(99,102,241,0.5));
+        }
+
+        .upload-card.success .upload-icon {
+            filter: drop-shadow(0 0 8px rgba(52,211,153,0.5));
+        }
+
+        .upload-text {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .upload-subtext {
+            font-size: 0.85rem;
+            color: var(--text-2);
+        }
+
+        input[type="file"] { display: none; }
+
+        /* ── Content type grid ──────────────────────────────────────── */
+        .content-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .content-type-item {
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            background: var(--surface-2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+        }
+
+        .content-type-item:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.07);
+        }
+
+        .content-type-item.selected {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.12);
+        }
+
+        .content-type-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .content-type-label {
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.92rem;
+        }
+
+        /* ── Buttons ────────────────────────────────────────────────── */
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.93rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            color: #fff;
+            box-shadow: 0 2px 12px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: var(--surface-3);
+            color: var(--text-2);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-2);
+            color: var(--text);
+            border-color: #3d4f66;
+        }
+
+        .btn-small {
+            padding: 7px 14px;
+            font-size: 0.85rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ── Pages ──────────────────────────────────────────────────── */
+        .page { display: none; }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Typography ─────────────────────────────────────────────── */
+        h2 {
+            color: var(--text);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 1.1em;
+            background: linear-gradient(to bottom, var(--accent), var(--accent-2));
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        h3 {
+            color: var(--text);
+            margin-bottom: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* ── Form elements ──────────────────────────────────────────── */
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.93rem;
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        select option { background: var(--surface-2); color: var(--text); }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* ── Toggle ─────────────────────────────────────────────────── */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 26px;
+        }
+
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--border);
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background: var(--text-2);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background: var(--accent); }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            background: #fff;
+        }
+
+        /* ── Category / attribute sections ──────────────────────────── */
+        .category-section {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .attribute-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.88rem;
+            transition: border-color 0.15s;
+        }
+
+        .attribute-item:hover { border-color: var(--accent); }
+
+        .attribute-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+        }
+
+        .counter {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        /* ── Alerts ─────────────────────────────────────────────────── */
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .alert-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid rgba(248,113,113,0.25); }
+        .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(52,211,153,0.25); }
+        .alert-info    { background: var(--info-bg);    color: var(--info);    border: 1px solid rgba(96,165,250,0.25); }
+        .alert-warn    { background: var(--warn-bg);    color: var(--warn);    border: 1px solid rgba(251,191,36,0.25); }
+
+        /* ── Code / JSON output ──────────────────────────────────────── */
+        pre {
+            background: #0a0e17;
+            color: #cdd6f4;
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 0.88rem;
+            line-height: 1.65;
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+        }
+
+        .json-key     { color: #89dceb; }
+        .json-string  { color: #a6e3a1; }
+        .json-number  { color: #fab387; }
+        .json-boolean { color: #cba6f7; }
+
+        /* ── Content type config blocks ──────────────────────────────── */
+        .content-type-config {
+            background: var(--surface-2);
+            border: 1.5px solid var(--border);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .content-type-config:hover { border-color: #3d4f66; }
+
+        .content-type-config h3 {
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .read-only {
+            background: var(--surface-3) !important;
+            color: var(--text-muted) !important;
+            cursor: not-allowed;
+            border-color: var(--border) !important;
+        }
+
+        /* ── Extracted data cards ────────────────────────────────────── */
+        .extracted-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
+        }
+
+        .data-card {
+            background: var(--surface-2);
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .data-card h4 { color: var(--accent); margin-bottom: 10px; font-size: 0.95rem; }
+
+        .data-card ul { list-style: none; padding-left: 0; }
+
+        .data-card li {
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-2);
+            font-size: 0.88rem;
+        }
+
+        .data-card li:last-child { border-bottom: none; }
+
+        /* ── Spinner ─────────────────────────────────────────────────── */
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Misc ────────────────────────────────────────────────────── */
+        .required-label::after { content: " *"; color: var(--error); }
+
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: var(--surface); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3d4f66; }
+
+        /* ── Start over btn ──────────────────────────────────────────── */
+        .start-over-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 9px 18px;
+            background: rgba(248, 113, 113, 0.12);
+            color: var(--error);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .start-over-btn:hover {
+            background: rgba(248, 113, 113, 0.22);
+            border-color: var(--error);
+            transform: translateY(-1px);
+        }
+
+        .start-over-btn:active { transform: translateY(0); }
+
+        /* ── Responsive ──────────────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.6rem; }
+
+            .step-indicator { gap: 10px; }
+            .step-text { display: none; }
+
+            .content-types-grid,
+            .extracted-data { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg" id="animatedBg"></div>
+
+    <div class="container">
+        <div class="header" style="position: relative;">
+            <button class="start-over-btn" onclick="startOver()">
+                <span style="font-size: 1.2em;">🔄</span>
+                Start Over
+            </button>
+            <h1>Content Generation Config Builder</h1>
+            <p>Create production-ready content generation configurations</p>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <span class="step-text">Upload & Select</span>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <span class="step-text">Review Data</span>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <span class="step-text">Configuration</span>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <span class="step-text">Generate</span>
+            </div>
+        </div>
+
+        <!-- Page 1: Upload & Select -->
+        <div id="page1" class="page active">
+            <div class="card">
+                <h2>Step 1: Upload & Select</h2>
+
+                <!-- Taxonomy Uploader -->
+                <div class="form-group">
+                    <h3 class="required-label">1. Upload Taxonomy File</h3>
+                    <div class="upload-card" id="taxonomyUpload">
+                        <input type="file" id="taxonomyFile" accept=".xlsx,.xls" />
+                        <div class="upload-icon">📊</div>
+                        <div class="upload-text">Click to upload Taxonomy.xlsx</div>
+                        <div class="upload-subtext">Excel file with categories and attributes</div>
+                    </div>
+                    <div id="taxonomyStatus"></div>
+                </div>
+
+                <!-- Content Types Selector -->
+                <div class="form-group">
+                    <h3 class="required-label">2. Select Content Types</h3>
+                    <div class="buttons-row">
+                        <button class="btn btn-secondary btn-small" onclick="selectAllContentTypes()">Select All</button>
+                        <button class="btn btn-secondary btn-small" onclick="clearAllContentTypes()">Clear All</button>
+                        <span class="counter" id="contentTypesCounter">0 selected</span>
+                    </div>
+                    <div class="content-types-grid" id="contentTypesGrid"></div>
+                </div>
+
+                <!-- Brand Voice Uploader -->
+                <div class="form-group">
+                    <h3 class="required-label">3. Upload Brand Voice File</h3>
+                    <div class="upload-card" id="brandVoiceUpload">
+                        <input type="file" id="brandVoiceFile" accept=".txt,.doc,.docx" />
+                        <div class="upload-icon">📝</div>
+                        <div class="upload-text">Click to upload Brand Voice file</div>
+                        <div class="upload-subtext">Supported formats: .txt, .doc, .docx</div>
+                    </div>
+                    <div id="brandVoiceStatus"></div>
+                </div>
+
+                <div class="buttons-row">
+                    <button class="btn btn-primary" onclick="goToStep(2)" id="nextToStep2">Next: Review Data →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Review Extracted Data -->
+        <div id="page2" class="page">
+            <div class="card">
+                <h2>Step 2: Review Extracted Data</h2>
+                <div id="extractedDataDisplay"></div>
+                <div class="buttons-row">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(3)">Next: Configuration →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Configuration -->
+        <div id="page3" class="page">
+            <div class="card">
+                <h2>Step 3: Configuration</h2>
+
+                <!-- Global Settings -->
+                <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                    <h3>Global Settings</h3>
+                    <div class="form-group">
+                        <label class="required-label">Store ID</label>
+                        <input type="text" id="storeId" placeholder="e.g., staging_jamplus" />
+                    </div>
+                    <div class="form-group">
+                        <label class="required-label">Taxonomy ID</label>
+                        <input type="text" id="taxonomyId" placeholder="e.g., 686b7b50d2c7a348baea7994" />
+                    </div>
+                    <div class="form-group">
+                        <label class="required-label">Default Locale</label>
+                        <input type="text" id="defaultLocale" placeholder="e.g., en-us" value="en-us" />
+                    </div>
+                    <div class="form-group">
+                        <label class="required-label">Default Service</label>
+                        <select id="defaultService">
+                            <option value="title_description_generation" selected>Title Description Generation</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="google">Google</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="config-section" style="margin-top: 20px; padding: 20px; background: #f8f9ff; border-radius: 10px; border: 2px dashed #667eea;">
+                    <h3 style="margin-bottom: 15px; color: #667eea;">
+                        <span style="margin-right: 8px;">📦</span>
+                        Supported Products (Optional)
+                    </h3>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 0.95em;">
+                        Upload a JSON file containing product IDs to populate the supportedProducts array.
+                        If not provided, this field will remain empty.
+                    </p>
+                    <div class="form-group">
+                        <label for="supportedProductsFile" style="cursor: pointer; display: inline-block; padding: 10px 20px; background: #667eea; color: white; border-radius: 8px; font-weight: 600; transition: all 0.3s;">
+                            📤 Upload Products JSON
+                        </label>
+                        <input type="file"
+                               id="supportedProductsFile"
+                               accept=".json"
+                               style="display: none;"
+                               onchange="handleSupportedProductsUpload(event)" />
+                        <div id="supportedProductsStatus" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <!-- Content Type Configurations -->
+                <div id="contentTypeConfigs"></div>
+
+                <div class="buttons-row">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-primary" onclick="goToStep(4)">Next: Generate →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Generate & Download -->
+        <div id="page4" class="page">
+            <div class="card">
+                <h2>Step 4: Generate & Download</h2>
+                <div class="alert alert-success">
+                    <strong>Configuration Ready!</strong> Review the generated JSON below and download when ready.
+                </div>
+
+                <div class="form-group">
+                    <h3>Generated Configuration</h3>
+                    <pre id="jsonPreview"></pre>
+                </div>
+
+                <div class="buttons-row">
+                    <button class="btn btn-secondary" onclick="goToStep(3)">← Back</button>
+                    <button class="btn btn-primary" onclick="downloadConfig()">📥 Download Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== EMBEDDED DATA ====================
+
+        const CONTENT_TYPES_DATA = {
+            "Product Description": { "productFieldName": "productDescription" },
+            "Product Title": { "productFieldName": "productTitle" },
+            "GSA Title": { "productFieldName": "gsaTitle" },
+            "GSA Description": { "productFieldName": "gsaDescription" },
+            "GSA Short Title": { "productFieldName": "gsaShortTitle" },
+            "GSA Product Detail": { "productFieldName": "gsaProductDetail" },
+            "GSA Product Highlights": { "productFieldName": "gsaProductHighlights" },
+            "Meta Title": { "productFieldName": "metaTitle" },
+            "Meta Description": { "productFieldName": "metaDescription" },
+            "FAQ": { "productFieldName": "FAQ" },
+            "Key Features": { "productFieldName": "KeyFeatures" },
+            "Who It Is For": { "productFieldName": "whoItIsFor" },
+            "Benefits": { "productFieldName": "benefits" },
+            "Product Description AEO": { "productFieldName": "productDescriptionAEO" }
+        };
+
+const PROMPTS_DATA = {
+    "productDescription": {
+        "prompt": "Goal: Generate concise, unique, and accurate US English product descriptions for products on an e-commerce website, using a context-aware and attribute-driven approach. Each description must be distinct in structure and tone, even for similar products, by leveraging attribute semantics creatively. Character length strictly must be within 40 to 100 words.\\n\\nTarget Audience: English-speaking customers seeking clarity and precision typical of premium retail listings, with an emphasis on precise and clear language typical for the fashion retail industry.   Structure: Adapt the retailer's template to the specific product type, ensuring appropriate terminology usage. The template should include following attributes and values:",
+        "attributesToUsePrefix": "Attribute to consider:",
+        "suffix": "**Uniqueness Logic:**  * Begin with a **complete opener sentence** that blends a simple mood word with either the product\u2019s material, type, or design essence. * The opener must highlight **what the product is** (its identity or craftsmanship), not how it is used. * Focus on tactile and material attributes (e.g., texture, form, detailing). * Example opener: \u201cRefined craftsmanship defines these cotton trousers with a timeless straight-leg silhouette.\u201d * Avoid stylistic patterns or identical sentence structures across items.  **Uniqueness Guidelines: Semantic and Contextual Boundaries**  **Opener Variation Threshold**  Maintain \u22645% repetition rate for opener structures within a category (e.g., for 500 \u201ctops,\u201d no more than 25 may share the same pattern). Enforce \u226570% lexical uniqueness between any two opener sentences (measured by word overlap). No two openers should begin with the same five consecutive words.  **Synonym and Syntax Diversification**  Rotate verbs and connectors such as crafted with, designed to, made from, built for, and shaped in. Substitute frequently used words with semantic variants, for example, sleek to streamlined, comfortable to relaxed, durable to long-lasting. Introduce variation in sentence rhythm, alternating between simple, compound, and complex structures periodically.  **Category-level Opener Pools**  Maintain at least twenty-five unique opener seed phrases per category. Rotate dynamically among seed pools based on product type to reduce overlap. For repeated category generations, increase lexical diversity by ten percent for every fifty additional products.  **Repetition and Penalty Logic**  If similarity in openers exceeds 5%, automatically recompose using alternative adjective + connector pairs. Penalize adjectives appearing more than three times per one hundred outputs to reduce lexical saturation.  **Structural Consistency**  Openers must always be full sentences, never fragments. Avoid stylized punctuation such as \"Classic:\" or \"Timeless.\" Each opener must merge at least two descriptive elements, for example, type and colour or feature and material, to maintain descriptive integrity.  **Structure:**  * **Sentence 1:** Mood + identity-focused opener. * **Sentence 2\u20133:** Detailing of design, construction, or comfort.  **Distinctiveness Rules:**  * PDP descriptions must sound **factual and product-centric**; avoid tone overlaps with AI SEO or GSA (do not use experiential or aesthetic phrases). * Explicitly avoid repeating the same opener term (\u201cRefined\u201d, \u201cTimeless\u201d, \u201cClassic\u201d, etc.) across consecutive products \u2014 use synonyms when possible.  **Content Rules:**  * Generate using only input category and attributes. * Length: 40\u2013100 words. * Be factual and specific; no assumptions. * Mention premium materials when present. * Maintain clean grammatical flow.  Exclusion Rules: Unusual or salesy phrases (e.g., 'Experience premium...', 'Perfect for...'). Styling guidance (e.g., 'Pair with...', 'Wear with...'). Brand names or the word 'Brand'. Attribute names within text. Avoid synthetic materials (polyester, nylon, acrylic, etc.) in mentions. No age group mentions (e.g., 'adult', 'kids').  **Exclusion Rules for Openers:**  1. Do not use these words or their forms in the first 10 words of any description:     * Elegant    * Elegance    * Effortless    * Effortlessly  2. Do not use any related forms or variations such as:    * Elegantly, Elegance-inspired, Effortlessness, Effortful, etc.  3. Do not use these words in any phrased form like:    * \u201ccrafted with effortless style\u201d    * \u201cdefined by elegance\u201d  4. If needed, replace with suitable alternatives based on product category:    * Replace \u201cElegant\u201d with \u201cRefined\u201d, \u201cPolished\u201d, \u201cGraceful\u201d, or \u201cSophisticated\u201d    * Replace \u201cEffortless\u201d with \u201cRelaxed\u201d, \u201cNatural\u201d, \u201cEasygoing\u201d, or \u201cSmooth\u201d  5. Descriptions containing these banned words or their variations must be rejected and rephrased.  6. Apply these exclusions across all categories and product types.  Value Handling: Avoid duplicate attribute values. Retain only the most contextually fitting value. Do not include 'Unknown' values. Avoid redundancy.   Output: English Description JSON object with the following structure: {   \"description\": \" \" }"
+    },
+    "productTitle": {
+        "prompt": "Goal: Generate concise and accurate English product titles for products on an e-commerce fashion website, using a context-aware approach.   Target Audience: US English-speaking native customers, with an emphasis on precise and clear language typical for the fashion retail industry.",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "rules:     - Generate using only input category and generated attributes     - Length: 3 to 10 words     - Do not use \"Unknown\" for missing attribute values     - Do not repeat any value     - Always end with \"category\", unless \"type\" is present; then use \"type\" instead   exclusions:     - Gender     - Colour     - Age groups (if value is \"Adult\"   formatting:     - Use singular format for Category, except for \"Shoes\"     - Use \"subcategory\", \"category\", and \"type\" values logically and meaningfully     - Remove duplicate values  Output: English Title JSON object with the following structure: {   \"title\": \"\" }"
+    },
+    "gsaTitle": {
+        "prompt": "You are an expert google ads copywriter for ecommerce who writes titles and descriptions optimized for conversions and reach to commercial intent users. I will provide a scraped website title, description, and relevant keywords. Your task is to generate a Google product feed title and description strictly following Google's guidelines and the instructions below. The output should be in the EXACT format specified without any additional commentary, explanations, or special characters. Output should be smooth, natural, and readable titles for Google Shopping Ads (GSA). These titles should help shoppers easily understand the product, include relevant high-traffic keywords, and avoid repetition or keyword stuffing to improve both user experience and ad performance.",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "Guidelines for Title Generation (GSA Titles):\nKeep each title concise (70\u2013100 characters max, including spaces) and optimized for search & conversions.\nEnsure all relevant high-volume commercial intent keywords are included.\nWhen generating GSA Title, extract \"high_traffic_keywords\" from each attribute and sort them in descending order of \"searchVolume\".\nFrom each attribute's sorted list, select the top searchTerm, prioritizing the one with the highest volume.\nAlways prioritize the searchTerm with the highest \"searchVolume\" within each attribute's \"high_traffic_keywords\".\nIf there are multiple strong candidates within an attribute that add distinct value without redundancy, use up to two per attribute.\nDo not omit important \"high_traffic_keywords\" terms unless space constraints require prioritization.\nIf multiple keywords have similar volumes, select the one that is broader and more commercially relevant.\nThis improves visibility and matches commercial search intent. Keywords must be incorporated naturally and fluently, not forcefully added, and must reflect actual product features.\nIf any attribute's \"high_traffic_keywords\" has no \"searchVolume\", or the highest \"searchVolume\" is 40 or below, select the displayName of that attribute value instead. Use the displayName to maintain clarity and avoid inserting low-impact search terms. This ensures all terms remain relevant even when high-traffic keywords are unavailable.\n\nWhen generating the \"GSA Title\", ensure it is naturally readable, clear, and human-friendly low without repeated or redundant terms.\nensure the final \"GSA Title\" sounds fluent, appealing, and optimized for both search engines and real shoppers.\nAlways create smooth, readable titles that flow naturally and are easy to understand.\n\nExclude the age group attribute if its value is Adult.\nAlways place the category name (e.g. dress, top, bag, bra) at the very end of the title and only once. It must appear after all other attributes but before any mention of size or color. Under no circumstances should the category appear in the middle of the title.\nIf the same category term is found in multiple attributes (like type, tags, or the original title), include it just once and in the correct final position.\nAlways use the singular form of the category, unless the standard term is naturally plural (e.g., shoes).\nRemove any duplicate values from the title.\nfor \"coats and jacket\" products: Do not include the category names \"Coat and Jackets\" explicitly in the title. Always combine the \"style\" (\"jacket_style\", \"blazer_style\",\"vest_style\" etc.) and \"type\" together and place them adjacent to each other in the title.Example: If type = jacket and jacket_style = trucker, the combined output should be \"Trucker Jacket\". Ensure the \"type\" or \"style\" is not repeated multiple times within the title.\n**Strictly ensure to capture style and type value at the end of the title for coats and jackets products**\n**The \"style\" attribute value must come before the \"type\"**\nIf the selected style attribute values already includes a term that overlaps with the \"type\" or ends with the category name (e.g., \"vest blazer\" or \"puffed jacket\", do not repeat the type or category name again in the title.\nDefer the \"style\" or product \"category\" (e.g., \"Shirtdress\", \"Jumpsuit\",\"shorts\" to the end of the title to maintain readability and reinforce what the product is. Limit the total number of modifiers before the style to no more than 3 key attributes.\n**Avoid creating awkward or overloaded titles**\nDo not use comma-separated phrases in the title and  maintain a smooth, readable, and natural flow that reflects how a user would read or search for the product\nIf the type or style value includes the category name, end the title with that value and do not add the category again. Always end the title with either type, style, or category, whichever is most relevant and avoids repetition.\nAvoid any duplication of words, and ensure the title remains clear, natural, and non-redundant.\nIt is strictly prohibited to repeat any keywords related to category, type, or style attributes (e.g. Shoes, Sneaker, Heels) to prevent redundancy and ensure the title remains clear and natural.\nIgnore women in the gender for dresses products in the title.\n\nCategory and Style Placement\n\nDo not include the category name or style term (e.g., dress, jumpsuit, short, pant, etc.) anywhere except at the end of the title.\nAlways end the title with style + category, unless the style already includes the category term.\nIf the style and category mean the same (e.g., sundress and dress), use only the style at the end.\nIf the style does not include the category (e.g., Overall + Jumpsuit), include both: Overall Jumpsuit.\nIf the style attribute contains a compound keyword like \"shirtdress\", \"sundress\", or similar terms that already include the word \"dress\", then do not add the generic category term \"dress\" again in the title.\nIncluding both may result in redundant phrases like \"Shirtdress Dress\" Instead, use only the specific style term (e.g., \"shirtdress\" to maintain a clean, professional, and non-repetitive title structure.\nIf the product category is Jumpsuit and a style is provided, combine the style and category at the end of the title.\nThe category name must be in singular form\nThe title itself should be in singular form if the product represents a single item (not a set or pack).\n\n**Feature Limitation and Connector Rule**\nAfter connectors such as \"with\", include only one meaningful and high-impact attribute (e.g., with Ruching, not with Ruching and Ruffles).\nAvoid stacking multiple descriptors or technical details after connectors \u2014 select the most relevant one that improves clarity and searchability.\n\n**Avoid Redundancy and Overload**\nDo not repeat the category, style, or similar terms in other parts of the title.\n\n\nStrictly avoid mentioning the value Solid in the title when referring to the pattern. If the pattern is Solid, it should be excluded entirely from the title, as it adds no useful information to the user.\nBegin the title with the model name (if available), followed by high-volume commercial intent keywords. Ensure the title flows naturally, remains concise, and follows the prescribed structure and placement rules.\nIf both strapless neckline and sleeveless sleeve length are identified, only include one, not both.\nWhen both the type and style attributes are present and they carry similar or overlapping meanings (e.g., Nightgown and Nightie, or Pullover and Jumper), compare their associated search terms. If both are semantically similar, retain only the keyword with the highest search volume. Strictly avoid including both terms in the title to eliminate redundancy and maintain clarity. For example, if type = nightgown and style = nightie, and nightie has lower search volume than nightgown, use nightgown only.\nStrictly avoid mentioning the following materials: Polyurethane, Polyethylene, Polyester, Plastic, Neoprene, Grosgrain Ribbon, Gore-Tex, EVA, Coated Canvas, Calf Hair, Nylon, Rubber, Latex, Microfiber.\nDo not use symbols, emojis, special characters, or unnecessary punctuation (e.g. no checkmarks or dollar signs unless part of the official product name).\n\nNo ALL CAPS.\nAdhere to Google's guidelines.\n\nOutput : JSON object with the following structure:\n{\n    gsatitle: \"\"\n}\n\n\n\n\n\n\n"
+    },
+    "gsaDescription": {
+        "prompt": "prompt : You are an expert google ads copywriter for ecommerce who writes titles and descriptions optimized for conversions and reach to commercial intent users. I will provide a scraped website title, description, and relevant keywords. Your task is to generate a Google product feed title and description strictly following Google's guidelines and the instructions below. The output should be in the EXACT format specified without any additional commentary, explanations, or special characters",
+        "attributesToUsePrefix": "",
+        "suffix": "Guidelines: Start every description with a complete, fluent opening sentence \u2014 never a single word or phrase fragment. The opener must introduce the product naturally, combining at least two distinct attribute types (e.g., colour + type, feature + finish, or type + material) into a coherent statement. Example of correct opener: \"Refined in every detail, these black cotton trousers deliver effortless style for daily wear.\" Avoid title-style openers such as \"Timeless.\" or \"Classic:\".  **Uniqueness rules:**  * Each generated description must have a syntactically distinct opener sentence. No two products should start with the same first six consecutive words. * Vary the order of attributes (e.g., alternate between colour-first, material-first, or feature-first constructions). * Rotate sentence connectors (e.g., use \"crafted with\", \"made to\", \"designed for\", \"built from\", etc.) to ensure non-repetitive phrasing. * Replace common adjectives with semantically equivalent terms (e.g., \"soft\" \u2192 \"smooth\", \"durable\" \u2192 \"long-lasting\", \"elegant\" \u2192 \"refined\". Maintain meaning but vary expression. * Introduce different sentence rhythms by alternating between compound and complex structures. * Avoid any duplicated descriptive sequences across products, even if attributes overlap. * For enhanced creativity, rotate through these 8 distinct prompts for openers, ensuring a diverse and engaging style across descriptions:  - Color + Inspiration: Describe the color to evoke an emotion or setting (e.g., \"Bright as a summer's day, these yellow...\".  - Material + Craftsmanship: Focus on the material and its craftsmanship (e.g., \"Handcrafted from soft leather, these...\".  - Function + Season: Emphasize the function linked to the \"season\" attribute (e.g., \"Designed for chilly days, this wool...\".  - Style + Mood: Begin with the style and the mood it sets (e.g., \"Effortlessly chic, this lace...\".  - Design + Everyday Use: Mention the design and its suitability for daily use (e.g., \"Perfectly tailored for daily wear, these...\".  - Versatility + Occasion: Discuss the versatility and suggest various occasions based on the \"collection\" identified (e.g., \"Transitioning from office to evening, this...\".  - Pattern + Geographic Influence: Start with the pattern and mention a geographic influence (e.g., \"Inspired by Parisian streets, these striped...\".  - Unique Element + Comfort: Highlight a unique element linked to comfort (e.g., \"Featuring a unique buckle, these...\".  - Texture + Functionality: Describe the texture and how it enhances function (e.g., \"With a velvety finish, this sofa promises...\".  - Shape + Artistic Influence: Highlight the shape and any artistic influences (e.g., \"Featuring an abstract form, this sculpture...\".  - Vintage + Modern Twist: Contrast vintage elements with modern updates (e.g., \"Vintage-inspired, yet with a modern twist, this watch...\".  - Innovation + Tradition: Blend innovative techniques with traditional style (e.g., \"Where innovation meets tradition, this backpack...\".    **Each description must include:**  * A concise introductory paragraph (2\u20133 sentences) highlighting the product's defining characteristics. * A set of plain-text bullet points (no symbols) listing detailed features, benefits, and practical use cases.  **Front-load key benefits and high-intent commercial keywords naturally.** Extract \"high_traffic_keywords\" from each attribute, sort by descending \"searchVolume\", and use the top one or two only if they add unique value. Avoid redundancy or keyword overuse.  **Language and tone:**  * Use plain, descriptive, and human-readable English. * Maintain fluency and logical flow between sentences. * Avoid robotic repetition or generic filler terms (e.g., \"perfect for daily use\". * No promotional or exaggerated phrases. * Exclude the word \"Solid\" when referring to patterns.  **Variation requirements:**  * Across 500+ products, no two openers may share more than 50% lexical overlap. * At least one descriptive adjective or phrase must differ in every opener. * Maintain consistent tone but allow stylistic flexibility in phrasing. * Ensure attribute-level contextual adaptation (e.g., if colour is \"beige\", use neutral or warm descriptors; if \"metallic\", use sleek or polished imagery).  **Length:** 750\u20131200 characters including spaces.  **Avoid restricted materials:** \"Polyurethane\", \"Polyethylene\", \"Polyester\", \"Plastic\", \"Neoprene\", \"Grosgrain Ribbon\", \"Gore-Tex\", \"EVA\", \"Coated Canvas\", \"Calf Hair\", \"Nylon\", \"Rubber\", \"Microfiber\".  Ensure each description exhibits semantic uniqueness, syntactic variety, and natural readability across all generated products.  **Output:** English Description JSON object with the following structure: { \"gsadescription\": \"\" }"
+    },
+    "gsaShortTitle": {
+        "prompt": "Goal: You are an expert google ads copywriter for ecommerce who writes titles and descriptions optimized for conversions and reach to commercial intent users. I will provide a scraped website title, description, and relevant keywords. Your task is to generate a Google product feed title and description strictly following Google's guidelines and the instructions below. The output should be in the EXACT format specified without any additional commentary, explanations, or special characters. Generate a concise, natural-sounding short title (max 65 characters) that includes all relevant high-volume, commercial-intent keywords based on the product\u2019s key attributes and features as highlighted in the title, description, tags, and image. Prioritize keywords that reflect real buyer search behavior and drive purchase intent.",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "Short Title Guidelines:\r\nCreate concise, clear, and natural-sounding short titles (typically under 50\u201360 characters) that help shoppers quickly understand the product's key features. \r\n\r\nEnsure all relevant high-volume commercial intent keywords are included.\r\nWhen generating \"GSA Short Title\", extract \"high_traffic_keywords\" from each attribute and sort them in descending order of \"searchVolume\".\r\nFrom each attribute\u2019s sorted list, select the top searchTerm, prioritizing the one with the highest volume.\r\nAlways prioritize the searchTerm with the highest \"searchVolume\" within each attribute's \"high_traffic_keywords\".\r\nIf there are multiple strong candidates within an attribute that add distinct value without redundancy, use up to two per attribute.\r\nDo not omit important \"high_traffic_keywords\" terms unless space constraints require prioritization.\r\nIf multiple keywords have similar volumes, select the one that is broader and more commercially relevant.\r\nThis improves visibility and matches commercial search intent. Keywords must be incorporated naturally and fluently, not forcefully added, and must reflect actual product features.\r\nIf any attribute\u2019s \"high_traffic_keywords\" has no \"searchVolume\", or the highest \"searchVolume\" is 40 or below, select the displayName of that attribute value instead. Use the displayName to maintain clarity and avoid inserting low-impact search terms. This ensures all terms remain relevant even when high-traffic keywords are unavailable.\r\n\r\nWhen generating the \"GSA Short Title\", ensure it is naturally readable, clear, and human-friendly low without repeated or redundant terms.\r\nensure the final \"GSA Short Title\" sounds fluent, appealing, and optimized for both search engines and real shoppers.\r\nAlways create smooth, readable titles that flow naturally and are easy to understand.\r\nExclude \"age group\" if the value is \"Adult\".\r\nStrictly ensure that the category is always placed at the end of the title, and must appear before any mention of size or color.\r\nIt is **strictly prohibited** to place the category in the **middle** of the title.\r\nThe category must be placed **at the very end of the title**, and it must appear **only once**.\r\nThe product title must always end with the correct Type or Style phrase, maintaining a clean and natural flow.\r\nIf the same category term appears across multiple attributes (e.g., type, tags, title), ensure it is included only once, and strictly place it at the very end of the title.\r\nIt is strictly prohibited to place the category term in the middle of the title or to include it more than once.\r\nThe category term must always appear in its singular form, except in cases where the correct term is naturally plural (e.g., \"shoes\".\r\nRemove any duplicate values from other attributes that repeat the same word as the category.\r\nEnsure the title maintains a natural, readable flow without repeated or redundant terms.\r\nIgonre \"women\" in the gender for dresses products in the title.\r\nStrictly avoid mentioning the value \"Solid\" in the title when referring to the pattern.\r\nIf the pattern is \"Solid\", it should be excluded entirely from the title, as it adds no useful information to the user.\r\nfor \"coats and jacket\" products: Do not include the category names \"Coat and Jackets\" explicitly in the title. Always combine the \"style\" (\"jacket_style\", \"blazer_style\",\"vest_style\" etc.) and \"type\" together and place them adjacent to each other in the title. For chairs category,if there is quantity seperate it with hyphen (Eg: Modern Green Barrel Accent Chair - Set of 2) Example: If type = jacket and jacket_style = trucker, the combined output should be \"Trucker Jacket\". Ensure the \"type\" or \"style\" is not repeated multiple times within the title. Ensure that no attribute values are appended after the final \"Type\" or \"Style\" keyword (e.g., Blazer, Jacket, Coat, Vest) in the title of coats and jackets products.\r\n**Strictly ensure to capture style and type value at the end of the title for coats and jackets products**\r\n**The \"style\" attribute value must come before the \"type\"**\r\nIf the selected style attribute values already includes a term that overlaps with the \"type\" or ends with the category name (e.g., \"vest blazer\" or \"puffed jacket\", do not repeat the type or category name again in the title.\r\nBegin the title with the model name (if available), followed by high-volume commercial intent keywords. Do not duplicate any words within the title. If the category name appears in the search terms, exclude it from the title to avoid redundancy. **Do not include the category anywhere else in the title.**\nAfter connectors like \"with,\" only include one meaningful search term or attribute value.\nAvoid listing multiple features in a row; choose the most relevant to keep the title concise and readable. Ending the Title:\n\nAlways end the title with style + category, unless the style already includes the category term.\nIf the style and category mean the same (e.g., sundress and dress), use only the style at the end.\nIf the style does not include the category (e.g., Overall + Jumpsuit), include both: Overall Jumpsuit. The title must strictly end with the category name, and the category name should appear only once in the entire title. Ensure the title flows naturally, remains concise, and follows the prescribed structure and placement rules.\r\nIf both \"strapless\" neckline and \"sleeveless\" sleeve length are identified, only include one, not both.\r\nWhen both the type and style attributes are present and they carry similar or overlapping meanings (e.g., Nightgown and Nightie, or Pullover and Jumper), compare their associated search terms. Do not duplicate any words within the title. If the category name appears in the search terms, exclude it from the title to avoid redundancy. The title must strictly end with the category name, and the category name should appear only once in the entire title.If both are semantically similar, retain only the keyword with the highest search volume. Strictly avoid including both terms in the title to eliminate redundancy and maintain clarity. For example, if type = nightgown and style = nightie, and nightie has lower search volume than nightgown, use nightgown only.\r\nStrictly avoid mentioning the following materials like \"Polyurethane\", \"Polyethylene\", \"Polyester\", \"Plastic\", \"Neoprene\", \"Grosgrain Ribbon\", \"Gore-Tex\", \"EVA\", \"Coated Canvas\", \"Calf Hair\", \"Nylon\", \"Rubber\",\"Latex\", \"Microfiber\". These materials must be excluded from title under all circumstances.\r\nIf the style attribute contains a compound keyword like \"shirtdress\", \"sundress\", or similar terms that already include the word \"dress\", then do not add the generic category term \"dress\" again in the title.\r\nIncluding both may result in redundant phrases like \"Shirtdress Dress\" Instead, use only the specific style term (e.g., \"shirtdress\" to maintain a clean, professional, and non-repetitive title structure.\r\n\r\nDo not place the word \"Gift\" abruptly at the end of the title without context. Instead, if highlighting that the product is suitable as a gift, use a natural and flowing phrase such as: \"for gift\", \"perferct for gift\", \"Ideal for Gifting\" \r\n\r\nDo not use symbols, emojis, special characters, or unnecessary punctuation (e.g., no :heavy_check_mark: or $ unless part of the official product name). \r\n\r\nNo ALL CAPS. adhere to google's guidelines.  OUTPUT : JSON object with the following structure: { \"shortTitle\": \"\" }"
+    },
+    "gsaProductDetail": {
+        "prompt": "You are an expert google ads copywriter for ecommerce who writes titles and descriptions optimized for conversions and reach to commercial intent users. I will provide a scraped website title, description, and relevant keywords. Your task is to generate a Google product feed title and description strictly following Google's guidelines and the instructions below. The output should be in the EXACT format specified without any additional commentary, explanations, or special characters",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "Keep it concise (below 60 characters) and optimized for search & conversions.\nPreferred format: Brand Name + Product Name + high volume commercial intent keywords and high intent/high traffic keywords + model year only if relevant.\nEnsure all relevant high volume commercial intent keywords are included in the title. If multiple high-intent terms apply, prioritize incorporating the broadest and most commercially relevant ones without redundancy. Do not omit important high-converting terms unless space constraints require prioritization. Ignore too generic words.\nInclude all relevant high-intent keywords related to the product's primary use case, even if they are not explicitly listed.\nPrioritize clarity, relevance, and high-converting language and reach.\nDo not use symbols, emojis, special characters, or unnecessary punctuation (e.g., no :heavy_check_mark: or $ unless part of the official product name). No ALL CAPS. adhere to google's guidelines.\n\nOUTPUT : JSON object with the following structure:\n{\n  \"title\": \"\"\n}"
+    },
+    "gsaProductHighlights": {
+        "prompt": "You are an expert in Google Shopping feed optimization. Your task is to generate Google Product Highlights for a given product to improve shopping ad performance, following Google's official guidelines. Adhere strictly to the instructions mentiond and include following attributes and values:",
+        "attributesToUsePrefix": "Attribute to consider:",
+        "suffix": "The product highlights should be:\nConcise: Short, punchy, and easy to read at a glance. Aim for maximum impact with minimal words. Each highlight must be concise, with a maximum of 140 characters (including spaces).\nProvide 5-9 highlights. Avoid mentioning colors and sizes.\n\nBenefit/Usecase-Driven: Focus on the benefits/usecase for the customer, not just the features.\nTranslate features into tangible advantages for the user (e.g., instead of \"stiff flex,\" say \"Advanced Control for Confident Skiing\".\nThink What's in it for them?.\n\nKeyword-Rich: Incorporate relevant keywords that potential customers might use when searching for this type of product on Google.\n(e.g., \"lightweight,\" \"waterproof,\" \"durable,\" \"comfortable,\" \"high-performance,\" etc.)\n\nVaried Focus: Generate highlights that touch upon different aspects of the product, such as:\n- Performance/Functionality\n- Comfort/Usability\n- Durability/Quality\n- Design/Aesthetics\n- Unique Features\n- Target Audience Suitability\n- Value Proposition\n\nPresented in a Format:\nShort & Punchy Benefit-Driven Highlights (less than 140 characters, for maximum impact in limited space)\n\nAvoid promotional language (e.g., \"Best-selling,\" \"Must-have,\" \"Limited offer\" and subjective opinions (e.g., \"Amazing quality,\" \"Beautiful design\".\nDo not include business details (e.g., \"Family-owned since 1990\".\nDo not use excessive ALL CAPS or symbols.\n\nGuidance for the LLM:\nAnalyze the provided product information to identify the most compelling selling points and key features.\nTranslate features into customer benefits. Ask yourself \"So what?\" after listing a feature and answer with the benefit.\nConsider the target audience and tailor the language and benefits accordingly.\nUse strong action verbs and evocative language to make the highlights more persuasive.\nPrioritize clarity and conciseness.\nAvoid jargon or overly technical terms unless appropriate for the target audience.\nThink about what would make a shopper click on the ad and choose this product over competitors.When generating GSA product highlights, always include any relevant attributes such as \"college\", \"sports_team\", \"logo\", \"state\", \"graphic_design\", and \"patch_design\" to highlight school pride, team loyalty, local identity and the design of the product. Highlights should focus on surfacing the most visually and thematically important aspects of the product that make it unique and appealing.\n\nExample Output Format:\n{\n  \"gsaHighlights\": \"[\n    \"100 Flex: Powerful & Precise Skiing\",\n    \"Intuition Liner: Custom Comfort Fit\",\n    \"60\u00b0 Walk Mode: Efficient Touring\",\n    \"102mm Wide Last: Ideal for Wider Feet\",\n    \"Vibram Cayman PRO: Superior Traction on Snow\",\n    \"Made in Italy: Premium Craftsmanship\"\n  ]\"\n}\nImportant:\nDo not deviate from the specified output format.\nDo not exceed 140 characters per bullet (including the attribute name, colon, and spaces).\nSeparate each bulletpoint with a comma as shown in the example output format.\nThe response must strictly follow the output format.\nDo not add any explanations, comments, or extra text outside the title and description.\nDo not use any symbols, emojis, or special characters in any part of the response.\nDo not include any additional commentary, marketing fluff, or text outside the specified format.\nProvide only the final list of Google Product Highlights in the exact format described.\nThe value of gsaHighlights must be a string containing a valid JSON array of strings with escaped quotes\nOutput Format: Use valid JSON with this key: { \"gsaHighlights\": \"[\"Feature1: Benifit1\",\"Feature2: Benifit2\",\"Feature3: Benifit3\"]\" }"
+    },
+    "metaTitle": {
+        "prompt": "Goal: Generate SEO-optimized meta titles for category pages on an e-commerce website.\n\nTarget Audience: US-based, English-speaking customers searching online for specific product types.\n\n Rules:\n1. Keep the meta title between 60\u201370 characters.\n2. Always include the category keyword near the beginning of the title.\n3. Use customer-relevant adjectives and intent-focused verbs like 'Shop', 'Explore', 'Discover'.\n4. Use natural language \u2013 avoid keyword stuffing.\n5. Use title case and ensure the title is coherent and appealing.\n6. Strictly do not include special characters like \"|\" or \"\u2013\" unless stylistically required.\n\nOutput: English Meta Title JSON object with the following structure:\n{ \"metatitle\": \"\" }",
+        "attributesToUsePrefix": "Attribute to consider:",
+        "suffix": "content_rules:\n  - Use only the input attributes to form the meta title\n  - Avoid promotional language or unsupported claims\n  - Do not mention brand names or materials unless explicitly provided\n  - Keep it grounded in data, and aligned with search intent\n  - Avoid repetition or irrelevant phrasing\n  - Ensure the title sounds natural to a US English-speaking shopper\n  - Output must be a single valid sentence in title case"
+    },
+    "metaDescription": {
+        "prompt": "Goal: Generate concise and keyword-friendly US English meta descriptions for an e-commerce website. Each meta description must be in an informative manner suitable for SEO and search engine snippets.\n\nTarget Audience: English-speaking native customers searching for fashion items online, with an emphasis on clarity, relevance, and proper terminology.",
+        "attributesToUsePrefix": "Attribute to consider:",
+        "suffix": "content_rules:\n  - Use only input category and provided attributes to form the description\n  - Length: 150 to 170 characters\n  - Be factual, relevant, and keyword-conscious\n  - Avoid promotional language (e.g., \"best\", \"perfect for\" and stylistic suggestions\n  - Do not mention synthetic materials like polyester, nylon, etc.\n  - Use singular form for category when applicable\n  - Mention premium materials only when present and relevant\n  - Avoid repeating words or including attribute names\n  - Ensure proper US English grammar, punctuation, and sentence flow\n  - Do not include brand names, age groups, or unavailable attributes\n  - Strictly avoid mentioning the following materials like \"Polyurethane\", \"Polyethylene\", \"Polyester\", \"Plastic\", \"Neoprene\", \"Grosgrain Ribbon\", \"Calf Hair\", \"Nylon\", \"Rubber\", \"Microfiber\".\n  - Prioritise natural search readability and keyword relevance\n  - Use sentence case and proper punctuation\n  - Do not repeat category terms unnecessarily\n  - Ensure the description reflects the overall assortment in that category, not individual items\n  - Use proper English grammar and spelling\n\nOutput: English Meta Description\nJSON object with the following structure:\n{\n  \"metadescription\": \"\"\n}"
+    },
+    "FAQ": {
+        "prompt": "You are an expert e-commerce copywriter. Your task is to create a concise, customer-friendly FAQ section for a single product. Use only the given attribute values to inform your answers and help customers make confident purchase decisions.",
+        "attributesToUsePrefix": "**Important** only consider following attributes:",
+        "suffix": "Make sure you:  \n1. Address common customer concerns\n2. Use the attribute values above to ground every answer.  \n3. Vary the tone between helpful, friendly, and authoritative.  \n4. Keep each answer under 40 words.\n5. Strictly avoid mentioning the following materials like \"Polyurethane\", \"Polyethylene\", \"Polyester\", \"Plastic\", \"Neoprene\", \"Grosgrain Ribbon\", \"Calf Hair\", \"Nylon\", \"Rubber\", \"Microfiber\".  \n6. Limit the number of questions and answers to 5\n7. The content of the response must be follow the same JSON structure as below. Also Ensure that the content of the FAQ must be a stringified\n\n{\n    faq: \"[{\"question\":\"question1\\nsecond line, with\\nmultiple contents\",\"answer\":\"answer1\"},{\"question\":\"question2\",\"answer\":\"answer2\\nanswer with 5 %. ,\\nmore data\"}]\"\n  }\n\nHere's one sample to guide you:\n\nquestion:   How do I style this bodysuit for different occasions?  \nanswer:     Pair it with high-waisted jeans for a casual day out, or layer it under a blazer for a sleek evening look. Its neutral khaki color makes it versatile for various outfits."
+    },
+    "KeyFeatures": {
+        "prompt": "You are a product copywriter who is an expert on writing answer engine optimization content. You will be provided with products attributes as a list of attributes to consider.\\n\\nBased on the following product attributes, generate a concise 'Key Features' list in bullet points. Each feature should begin with a feature name (e.g., 'Breathable Mesh Upper'), followed by a colon and a brief benefit-driven explanation. Use a professional tone and keep each point focused on a specific function or advantage.\n  - Strictly avoid mentioning the following materials like \"Polyurethane\", \"Polyethylene\", \"Polyester\", \"Plastic\", \"Neoprene\", \"Grosgrain Ribbon\", \"Calf Hair\", \"Nylon\", \"Rubber\", \"Microfiber\".\n Refer to the style used in this example:\\n\\nExample:\\n\\nBreathable Mesh Upper: Keeps your feet cool and comfortable on long runs.\\nReact Foam Midsole: Provides lightweight cushioning with responsive energy return.\\nDurable Rubber Outsole: Designed for traction on roads and light trails.\\nFlywire Technology: Ensures a secure, locked-in fit.\\nNike Air Unit: Strategically placed for added comfort and shock absorption during impact.\\nEco-Conscious Design: Crafted with at least 20% recycled materials by weight.\\n\\nGenerated content must be in plain text. Do not include any markups.\\n\\nOutput format: JSON structure with the following format: {\\\"keyFeatures\\\":\\\"\\\"}\\n\\nImportant: Each bullet point must be a new line in the output JSON.\n\nInclude a dash (-) at the start of each new line",
+        "attributesToUsePrefix": "",
+        "suffix": ""
+    },
+    "whoItIsFor": {
+        "prompt": "Goal: Generate concise US English bullet points for the 'Who It's For' section of a fashion product description on an e-commerce website. Each point should clearly define the intended wearer or usage context based on the product's category and attributes.\n\nTarget Audience: English-speaking native customers shopping online for fashion, who expect professional, informative, and relevant descriptions typical of the fashion retail industry.",
+        "attributesToUsePrefix": "Attributes to consider:",
+        "suffix": "content_rules:\n  - Use only the input category and provided attributes to form each bullet point\n  - Output 1\u20133 concise bullet points\n  - Be factual and specific; use provided data without assumptions\n  - Avoid promotional tone and subjective language\n  - Write for third-person audience (e.g., \"Designed for those who...\"\n  - Use natural, fluent US English\nexclusions:\n  - Do not include styling suggestions (e.g., \"Pair with\", \"Style it with\"\n  - Do not mention age groups (e.g., \"for adults\"\n  - Do not use subjective phrases (e.g., \"perfect for\", \"best suited for\"\n  - Do not use brand names or attribute names\n  - Strictly avoid mentioning the following materials like \"Polyurethane\", \"Polyethylene\", \"Polyester\", \"Plastic\", \"Neoprene\", \"Grosgrain Ribbon\", \"Calf Hair\", \"Nylon\", \"Rubber\", \"Microfiber\".\n  - Do not include unavailable or assumed information\nformatting:\n  - Use full sentences in bullet format (each bullet starts with a capital letter and ends with a full stop, make sure the include a dash (-) at the start of each new line)\n  - Use singular form for the category unless it is \"Shoes\"\n  - Follow correct brand casing (e.g., adidas, Nike)\n  - Do not repeat attribute values\n  - Maintain grammatical correctness and spelling.\n\nOutput format:\n{\n  \"whoItIsFor\": \"- Sentence one.\\n- Sentence two.\\n- Sentence three.\"\n}\n\nImportant: The value of `whoItIsFor` **must be a single string**. Each bullet point must be placed on a **new line using \\n**, start with a dash (-) and a space, and end with a period. **Do not use a list or array. Do not wrap the bullets in brackets. Return a single plain-text string inside the JSON object.**"
+    },
+    "benefits": {
+        "prompt": "Goal: Generate factual and concise US English bullet points for the 'Benefits' section of a fashion product description on an e-commerce website. Each bullet point should describe a specific functional or practical benefit derived from the product's features.  Target Audience: English-speaking native customers looking for clear, product-driven information to guide purchase decisions in the fashion retail space.",
+        "attributesToUsePrefix": "Attributes to consider",
+        "suffix": "content_rules:  Use only the input category and provided attributes to form each bullet point.  Output 1\u20133 concise bullet points.  Be factual and specific; use provided data without assumptions.  Avoid promotional tone and subjective language.  Write for a third-person audience (e.g., \u201cDesigned for those who\u2026\u201d).  Use natural, fluent UK English.  exclusions:  Do not include styling suggestions (e.g., \u201cPair with\u201d, \u201cStyle it with\u201d).  Do not mention age groups (e.g., \u201cfor adults\u201d).  Do not use subjective phrases (e.g., \u201cperfect for\u201d, \u201cbest suited for\u201d).  Do not use brand names or attribute names.  Do not include unavailable or assumed information.  Strictly avoid mentioning the following materials: \u201cPolyurethane\u201d, \u201cPolyethylene\u201d, \u201cPolyester\u201d, \u201cPlastic\u201d, \u201cNeoprene\u201d, \u201cGrosgrain Ribbon\u201d, \u201cCalf Hair\u201d, \u201cNylon\u201d, \u201cRubber\u201d, \u201cMicrofiber\u201d.  formatting:  Use full sentences in bullet format (each bullet starts with a capital letter and ends with a full stop, with a dash (-) at the start of each new line).  Use singular form for the category unless it is \u201cShoes\u201d.  Follow correct brand casing (e.g., adidas, Nike).  Do not repeat attribute values.  Maintain grammatical correctness and spelling.  Output: JSON object with the following structure:  {   \"benefits\": \"- benefit 1\\n- benefit 2\\n- benefit 3\" }   Important:  Each bullet point must appear on a new line exactly as shown within the \"benefits\" string value.  Do not use quotes for individual bullets.  Ensure all bullets are factual, concise, and derived only from the provided attributes."
+    },
+    "productDescriptionAEO": {
+        "prompt": "You are a product content writer specializing in Answer Engine Optimization (AEO). Using the given attributes write a compelling, benefits-driven product description based on the provided product attributes. The description should be structured in 2\u20133 concise paragraphs. Focus on clarity, relevance, and natural language to improve visibility in search and answer engines. Include key features and performance benefits naturally within the flow. Avoid jargon, and write in a tone that's informative yet persuasive.  Uniqueness Technique: Start the description with a complete opener sentence, not a single word or label. This sentence must integrate a simple, creative mood word inspired by the product's color, feature, or type attribute. Example correct format: \u201cTranquil blue ceramic vase brings a calm aesthetic to any living space.\u201d Example incorrect formats: \u201cTranquil.\u201d / \u201cTranquil Blue:\u201d If these attributes are missing, derive the opener from the product's category or primary material (e.g., \u201cRefined craftsmanship defines this stainless steel watch.\u201d).  **Uniqueness Guidelines: Semantic and Contextual Boundaries**  **Opener Variation Threshold**  Maintain \u22645% repetition rate for opener structures within a category (e.g., for 500 \u201ctops,\u201d no more than 25 may share the same pattern). Enforce \u226570% lexical uniqueness between any two opener sentences (measured by word overlap). No two openers should begin with the same five consecutive words.  **Synonym and Syntax Diversification**  Rotate verbs and connectors such as crafted with, designed to, made from, built for, and shaped in. Substitute frequently used words with semantic variants, for example, sleek to streamlined, comfortable to relaxed, durable to long-lasting. Introduce variation in sentence rhythm, alternating between simple, compound, and complex structures periodically.  **Category-level Opener Pools**  Maintain at least 25 unique opener seed phrases per category. Rotate dynamically among seed pools based on product type to reduce overlap. For repeated category generations, increase lexical diversity by ten percent for every fifty additional products.  **Repetition and Penalty Logic**  If similarity in openers exceeds 5%, automatically recompose using alternative adjective + connector pairs. Penalize adjectives appearing more than three times per one hundred outputs to reduce lexical saturation.  **Structural Consistency**  Openers must always be full sentences, never fragments. Avoid stylized punctuation such as \"Classic:\" or \"Timeless.\" Each opener must merge at least two descriptive elements, for example, type and colour or feature and material, to maintain descriptive integrity.  **Output Structure** Paragraph 1: Start with the unique opener sentence and describe defining product attributes. Paragraph 2: Explain how these features provide practical or experiential benefits.  Style & Tone: Informative, confident, and natural \u2014 avoid marketing exaggeration. Blend key attributes and benefits smoothly; avoid bullet points or list-style outputs. Material and Exclusion Rules: Strictly avoid mentioning synthetic materials such as Polyurethane, Polyethylene, Polyester, Plastic, Neoprene, Grosgrain Ribbon, Calf Hair, Nylon, Rubber, or Microfiber. Do not include brand names unless explicitly provided.  **Exclusion Rules for Openers:**  1. Do not use these words or their forms in the first 10 words of any description:     * Elegant    * Elegance    * Effortless    * Effortlessly  2. Do not use any related forms or variations such as:    * Elegantly, Elegance-inspired, Effortlessness, Effortful, etc.  3. Do not use these words in any phrased form like:    * \u201ccrafted with effortless style\u201d    * \u201cdefined by elegance\u201d  4. If needed, replace with suitable alternatives based on product category:    * Replace \u201cElegant\u201d with \u201cRefined\u201d, \u201cPolished\u201d, \u201cGraceful\u201d, or \u201cSophisticated\u201d    * Replace \u201cEffortless\u201d with \u201cRelaxed\u201d, \u201cNatural\u201d, \u201cEasygoing\u201d, or \u201cSmooth\u201d  5. Descriptions containing these banned words or their variations must be rejected and rephrased.  6. Apply these exclusions across all categories and product types.   Output: English Description JSON object with the following structure: {\"productDescriptionAEO\":  \"[Paragraph 1]\\n\\n[Paragraph 2]\"}   IMPORTANT: The generated content must be in plain text, Do not use any markups. The opener must always form a complete descriptive sentence that flows naturally into the rest of the content. Avoid isolated adjectives or labels. Maintain factual accuracy, clarity, and variation across all product categories.",
+        "attributesToUsePrefix": "",
+        "suffix": ""
+    },
+};
+
+        // ==================== STATE MANAGEMENT ====================
+
+        let appState = {
+            taxonomyData: null,
+            selectedContentTypes: [],
+            brandVoiceText: '',
+            categoryAttributes: {},
+            configData: {},
+            supportedProducts: []
+        };
+
+        // ==================== INITIALIZATION ====================
+
+        function initializeApp() {
+            createAnimatedBackground();
+            renderContentTypes();
+            setupEventListeners();
+            updateNextButton();
+        }
+
+        function createAnimatedBackground() {
+            const bg = document.getElementById('animatedBg');
+            for (let i = 0; i < 30; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = Math.random() * 100 + '%';
+                dot.style.top = Math.random() * 100 + '%';
+                dot.style.animationDelay = Math.random() * 20 + 's';
+                dot.style.animationDuration = (15 + Math.random() * 10) + 's';
+                bg.appendChild(dot);
+            }
+        }
+
+        function renderContentTypes() {
+            const grid = document.getElementById('contentTypesGrid');
+            grid.innerHTML = '';
+
+            Object.keys(CONTENT_TYPES_DATA).forEach((contentType, index) => {
+                const div = document.createElement('div');
+                div.className = 'content-type-item';
+                div.innerHTML = `
+                    <input type="checkbox" id="ct_${index}" value="${contentType}" onchange="toggleContentType(this)">
+                    <label class="content-type-label" for="ct_${index}">${contentType}</label>
+                `;
+                div.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = div.querySelector('input');
+                        checkbox.checked = !checkbox.checked;
+                        toggleContentType(checkbox);
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function setupEventListeners() {
+            // Taxonomy upload
+            document.getElementById('taxonomyUpload').onclick = () => {
+                document.getElementById('taxonomyFile').click();
+            };
+            document.getElementById('taxonomyFile').onchange = handleTaxonomyUpload;
+
+            // Brand voice upload
+            document.getElementById('brandVoiceUpload').onclick = () => {
+                document.getElementById('brandVoiceFile').click();
+            };
+            document.getElementById('brandVoiceFile').onchange = handleBrandVoiceUpload;
+        }
+
+        // ==================== FILE UPLOAD HANDLERS ====================
+
+        async function handleTaxonomyUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const card = document.getElementById('taxonomyUpload');
+            const status = document.getElementById('taxonomyStatus');
+
+            try {
+                status.innerHTML = '<div class="alert alert-info">Processing taxonomy file...</div>';
+
+                const data = await readExcelFile(file);
+                parseTaxonomyData(data);
+
+                card.classList.add('success');
+                status.innerHTML = `<div class="alert alert-success">✓ Taxonomy loaded: ${Object.keys(appState.categoryAttributes).length} categories found</div>`;
+                updateNextButton();
+            } catch (error) {
+                status.innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+                console.error('Taxonomy upload error:', error);
+            }
+        }
+
+        async function readExcelFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        resolve(workbook);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function parseTaxonomyData(workbook) {
+            const categoryAttributes = {};
+
+            workbook.SheetNames.forEach(sheetName => {
+                const sheet = workbook.Sheets[sheetName];
+
+                // Read row 6 (index 5 in 0-based) - concatenate all cells in that row
+                let row6Content = '';
+                for (let col = 0; col < 50; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: 5, c: col });
+                    const cell = sheet[cellAddress];
+                    if (cell && cell.v) {
+                        row6Content += String(cell.v) + ' ';
+                    }
+                }
+
+                try {
+                    // Extract attributes from curly braces like {style}, {type}, {color}
+                    const curlyBracePattern = /\{([^}]+)\}/g;
+                    const matches = row6Content.matchAll(curlyBracePattern);
+                    const extractedAttributes = [];
+
+                    for (const match of matches) {
+                        const attrValue = match[1].trim();
+                        if (attrValue && !attrValue.includes('"') && !attrValue.includes('attributes')) {
+                            // This is a simple attribute like {style} or {type}
+                            extractedAttributes.push(attrValue);
+                        }
+                    }
+
+                    // If we found attributes from curly braces, use those
+                    if (extractedAttributes.length > 0) {
+                        categoryAttributes[sheetName] = extractedAttributes;
+                    } else {
+                        // Fallback: Try to parse as JSON format {"attributes": ["attr1", "attr2"]}
+                        const jsonMatch = row6Content.match(/\{[^}]*"attributes"[^}]*\[[^\]]*\][^}]*\}/);
+                        if (jsonMatch) {
+                            try {
+                                const jsonData = JSON.parse(jsonMatch[0]);
+                                if (jsonData.attributes && Array.isArray(jsonData.attributes)) {
+                                    categoryAttributes[sheetName] = jsonData.attributes;
+                                }
+                            } catch (e) {
+                                console.warn(`JSON parse failed for ${sheetName}:`, e);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Could not parse attributes for ${sheetName}:`, error);
+                }
+
+                // If no attributes found yet, log warning
+                if (!categoryAttributes[sheetName] || categoryAttributes[sheetName].length === 0) {
+                    console.warn(`No attributes found for category: ${sheetName}`);
+                    categoryAttributes[sheetName] = [];
+                }
+            });
+
+            appState.categoryAttributes = categoryAttributes;
+            appState.taxonomyData = workbook;
+        }
+
+        async function handleBrandVoiceUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const card = document.getElementById('brandVoiceUpload');
+            const status = document.getElementById('brandVoiceStatus');
+
+            try {
+                status.innerHTML = '<div class="alert alert-info">Processing brand voice file...</div>';
+
+                const text = await readTextFile(file);
+                appState.brandVoiceText = text;
+
+                card.classList.add('success');
+                status.innerHTML = `<div class="alert alert-success">✓ Brand voice loaded: ${text.length} characters</div>`;
+                updateNextButton();
+            } catch (error) {
+                status.innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+                console.error('Brand voice upload error:', error);
+            }
+        }
+
+        async function readTextFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsText(file);
+            });
+        }
+
+        async function handleSupportedProductsUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('supportedProductsStatus');
+
+            try {
+                status.innerHTML = '<div class="alert alert-info">📖 Reading JSON file...</div>';
+
+                const text = await readTextFile(file);
+                const jsonData = JSON.parse(text);
+
+                // Extract product IDs - handle different JSON structures
+                let productIds = [];
+
+                if (Array.isArray(jsonData)) {
+                    // If it's already an array of product IDs
+                    productIds = jsonData;
+                } else if (jsonData.supportedProducts && Array.isArray(jsonData.supportedProducts)) {
+                    // If it has a supportedProducts key
+                    productIds = jsonData.supportedProducts;
+                } else if (jsonData.products && Array.isArray(jsonData.products)) {
+                    // If it has a products key
+                    productIds = jsonData.products;
+                } else if (jsonData.productIds && Array.isArray(jsonData.productIds)) {
+                    // If it has a productIds key
+                    productIds = jsonData.productIds;
+                } else {
+                    throw new Error('Could not find product IDs array in JSON file. Expected format: array of strings or object with "supportedProducts", "products", or "productIds" key.');
+                }
+
+                appState.supportedProducts = productIds;
+
+                status.innerHTML = `<div class="alert alert-success">✓ Loaded ${productIds.length} product ID${productIds.length !== 1 ? 's' : ''} from ${file.name}</div>`;
+            } catch (error) {
+                status.innerHTML = `<div class="alert alert-error">❌ Error: ${error.message}</div>`;
+                console.error('Supported products upload error:', error);
+                appState.supportedProducts = [];
+            }
+        }
+
+        // ==================== CONTENT TYPE SELECTION ====================
+
+        function toggleContentType(checkbox) {
+            const contentType = checkbox.value;
+            const item = checkbox.closest('.content-type-item');
+
+            if (checkbox.checked) {
+                item.classList.add('selected');
+                if (!appState.selectedContentTypes.includes(contentType)) {
+                    appState.selectedContentTypes.push(contentType);
+                }
+            } else {
+                item.classList.remove('selected');
+                appState.selectedContentTypes = appState.selectedContentTypes.filter(ct => ct !== contentType);
+            }
+
+            updateContentTypesCounter();
+            updateNextButton();
+        }
+
+        function selectAllContentTypes() {
+            const checkboxes = document.querySelectorAll('#contentTypesGrid input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+                cb.closest('.content-type-item').classList.add('selected');
+            });
+            appState.selectedContentTypes = Object.keys(CONTENT_TYPES_DATA);
+            updateContentTypesCounter();
+            updateNextButton();
+        }
+
+        function clearAllContentTypes() {
+            const checkboxes = document.querySelectorAll('#contentTypesGrid input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+                cb.closest('.content-type-item').classList.remove('selected');
+            });
+            appState.selectedContentTypes = [];
+            updateContentTypesCounter();
+            updateNextButton();
+        }
+
+        function updateContentTypesCounter() {
+            document.getElementById('contentTypesCounter').textContent =
+                `${appState.selectedContentTypes.length} selected`;
+        }
+
+        function updateNextButton() {
+            const btn = document.getElementById('nextToStep2');
+            const isValid = appState.taxonomyData &&
+                          appState.selectedContentTypes.length > 0 &&
+                          appState.brandVoiceText;
+            btn.disabled = !isValid;
+        }
+
+        // ==================== NAVIGATION ====================
+
+        function goToStep(step) {
+            // Validation
+            if (step === 2 && !validateStep1()) return;
+            if (step === 3 && !validateStep2()) return;
+            if (step === 4 && !validateStep3()) return;
+
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show target page
+            document.getElementById(`page${step}`).classList.add('active');
+
+            // Update step indicator
+            document.querySelectorAll('.step').forEach((stepEl, index) => {
+                stepEl.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    stepEl.classList.add('completed');
+                } else if (index + 1 === step) {
+                    stepEl.classList.add('active');
+                }
+            });
+
+            // Load data for specific steps
+            if (step === 2) renderExtractedData();
+            if (step === 3) renderConfigurationForms();
+            if (step === 4) generateAndPreviewJSON();
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function validateStep1() {
+            if (!appState.taxonomyData) {
+                alert('Please upload a taxonomy file');
+                return false;
+            }
+            if (appState.selectedContentTypes.length === 0) {
+                alert('Please select at least one content type');
+                return false;
+            }
+            if (!appState.brandVoiceText) {
+                alert('Please upload a brand voice file');
+                return false;
+            }
+            return true;
+        }
+
+        function validateStep2() {
+            return true; // No validation needed for review step
+        }
+
+        function validateStep3() {
+            const storeId = document.getElementById('storeId').value.trim();
+            if (!storeId) {
+                alert('Please enter a Store ID');
+                return false;
+            }
+            return true;
+        }
+
+        // ==================== STEP 2: REVIEW DATA ====================
+
+        function renderExtractedData() {
+            const container = document.getElementById('extractedDataDisplay');
+
+            let html = '<div class="extracted-data">';
+
+            // Show categories and attributes
+            Object.entries(appState.categoryAttributes).forEach(([category, attributes]) => {
+                html += `
+                    <div class="data-card">
+                        <h4>${category}</h4>
+                        <p><strong>${attributes.length} attributes:</strong></p>
+                        <ul>
+                            ${attributes.slice(0, 10).map(attr => `<li>${attr}</li>`).join('')}
+                            ${attributes.length > 10 ? `<li><em>...and ${attributes.length - 10} more</em></li>` : ''}
+                        </ul>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            html += `
+                <div class="alert alert-info" style="margin-top: 20px;">
+                    <strong>Summary:</strong><br>
+                    • ${Object.keys(appState.categoryAttributes).length} categories found<br>
+                    • ${appState.selectedContentTypes.length} content types selected<br>
+                    • Brand voice text: ${appState.brandVoiceText.length} characters
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // ==================== STEP 3: CONFIGURATION ====================
+
+        function renderConfigurationForms() {
+            const container = document.getElementById('contentTypeConfigs');
+            let html = '';
+
+            appState.selectedContentTypes.forEach((contentType, index) => {
+                const productFieldName = CONTENT_TYPES_DATA[contentType].productFieldName;
+                const promptData = PROMPTS_DATA[productFieldName] || {
+                    prompt: '',
+                    attributesToUsePrefix: '',
+                    suffix: ''
+                };
+
+                html += `
+                    <div class="content-type-config" style="margin-bottom: 20px;">
+                        <div class="content-type-header-bar"
+                             onclick="toggleContentTypeConfig(${index})"
+                             style="display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <span id="toggle-icon-${index}" style="font-size: 1.3em; color: white; transition: transform 0.3s ease;">▶</span>
+                                <h3 style="margin: 0; color: white; font-size: 1.4em;">${contentType}</h3>
+                                <span style="color: rgba(255,255,255,0.8); font-size: 0.9em;">(${productFieldName})</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 15px;" onclick="event.stopPropagation();">
+                                <span style="font-weight: 600; color: white;">Active</span>
+                                <label class="toggle-switch" style="transform: scale(1.3);">
+                                    <input type="checkbox" checked
+                                           data-config="${index}" data-field="active" />
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="content-type-details-${index}" style="display: none; padding: 25px; background: #f9fafb; border-radius: 0 0 12px 12px; margin-top: -8px;">
+                        <div class="form-group">
+                            <label>Product Field Name</label>
+                            <input type="text" value="${productFieldName}" class="read-only" readonly
+                                   data-config="${index}" data-field="productFieldName" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Main Prompt</label>
+                            <textarea data-config="${index}" data-field="prompt" rows="4">${promptData.prompt}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attributes Prefix</label>
+                            <textarea data-config="${index}" data-field="attributesToUsePrefix" rows="2">${promptData.attributesToUsePrefix}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Suffix</label>
+                            <textarea data-config="${index}" data-field="suffix" rows="2">${promptData.suffix}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Min Required Attributes</label>
+                            <input type="number" value="3" min="0"
+                                   data-config="${index}" data-field="minRequiredAttributes" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Response In JSON</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked
+                                       data-config="${index}" data-field="responseInJson" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Generation Strategy</label>
+                            <select data-config="${index}" data-field="generationStrategy">
+                                <option value="enhancedGeneration" selected>Enhanced Generation</option>
+                                <option value="gsaProductDetail">GSA Product Detail</option>
+                                <option value="default">Default</option>
+                                <option value="seo">SEO Optimized</option>
+                                <option value="creative">Creative</option>
+                            </select>
+                        </div>
+
+                        <h4 style="margin-top: 30px; color: #667eea;">Category Attribute Selection</h4>
+                        <div id="categoryAttributes_${index}">
+                            ${renderCategoryAttributes(index)}
+                        </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderCategoryAttributes(configIndex) {
+            let html = '';
+
+            Object.entries(appState.categoryAttributes).forEach(([category, attributes]) => {
+                const categoryId = category.replace(/[^a-zA-Z0-9]/g, '_');
+                html += `
+                    <div class="category-section">
+                        <div class="category-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-radius: 10px; border: 2px solid #e0e7ff;">
+                            <h4 style="margin: 0; color: #667eea;">${category}</h4>
+                            <div style="display: flex; align-items: center; gap: 25px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-weight: 600; color: #666;">Active</span>
+                                    <label class="toggle-switch" style="transform: scale(1.2);">
+                                        <input type="checkbox" checked
+                                               id="categoryActive_${configIndex}_${categoryId}"
+                                               data-config="${configIndex}"
+                                               data-category="${category}"
+                                               data-field="categoryActive" />
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <button class="btn btn-secondary btn-small"
+                                            onclick="selectAllCategoryAttributes(${configIndex}, '${category}')">
+                                        Select All
+                                    </button>
+                                    <button class="btn btn-secondary btn-small"
+                                            onclick="deselectAllCategoryAttributes(${configIndex}, '${category}')">
+                                        Deselect All
+                                    </button>
+                                    <span class="counter" id="counter_${configIndex}_${category}">0 selected</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="category-prompt-toggle" style="margin: 15px 0; padding: 15px; background: #f8f9ff; border-radius: 10px; border: 2px solid #d0d7ff;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 700; color: #667eea; font-size: 1.05em;">📝 Custom Category Prompt</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-weight: 600; color: #666;">Enable</span>
+                                    <label class="toggle-switch" style="transform: scale(1.2);">
+                                        <input type="checkbox"
+                                               id="enablePrompt_${configIndex}_${categoryId}"
+                                               data-config="${configIndex}"
+                                               data-category="${category}"
+                                               onchange="toggleCategoryPrompt(${configIndex}, '${categoryId}')" />
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="categoryPromptFields_${configIndex}_${categoryId}" style="display: none; margin: 15px 0; padding: 15px; background: #fff; border: 2px solid #667eea; border-radius: 8px;">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Category Prompt:</label>
+                                <textarea
+                                    data-config="${configIndex}"
+                                    data-category="${category}"
+                                    data-field="categoryPrompt"
+                                    placeholder="Enter custom prompt for this category..."
+                                    style="width: 100%; min-height: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Attributes Prefix:</label>
+                                <input type="text"
+                                    data-config="${configIndex}"
+                                    data-category="${category}"
+                                    data-field="categoryPrefix"
+                                    placeholder="e.g., **Important** only consider following attributes:"
+                                    style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-weight: 600; margin-bottom: 5px;">Suffix:</label>
+                                <textarea
+                                    data-config="${configIndex}"
+                                    data-category="${category}"
+                                    data-field="categorySuffix"
+                                    placeholder="Enter output format and additional rules..."
+                                    style="width: 100%; min-height: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="attributes-grid">
+                            ${attributes.map(attr => `
+                                <div class="attribute-item">
+                                    <input type="checkbox"
+                                           id="attr_${configIndex}_${category}_${attr}"
+                                           value="${attr}"
+                                           data-config="${configIndex}"
+                                           data-category="${category}"
+                                           onchange="updateCategoryCounter(${configIndex}, '${category}')" />
+                                    <label for="attr_${configIndex}_${category}_${attr}">${attr}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            return html;
+        }
+
+        function toggleCategoryPrompt(configIndex, categoryId) {
+            const checkbox = document.getElementById(`enablePrompt_${configIndex}_${categoryId}`);
+            const fields = document.getElementById(`categoryPromptFields_${configIndex}_${categoryId}`);
+
+            if (checkbox.checked) {
+                fields.style.display = 'block';
+            } else {
+                fields.style.display = 'none';
+            }
+        }
+
+        function toggleContentTypeConfig(index) {
+            const details = document.getElementById(`content-type-details-${index}`);
+            const icon = document.getElementById(`toggle-icon-${index}`);
+
+            if (details.style.display === 'none' || details.style.display === '') {
+                details.style.display = 'block';
+                icon.style.transform = 'rotate(90deg)';
+                icon.textContent = '▼';
+            } else {
+                details.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+                icon.textContent = '▶';
+            }
+        }
+
+        function selectAllCategoryAttributes(configIndex, category) {
+            // Only select attribute checkboxes (those with value attribute but no data-field)
+            const checkboxes = document.querySelectorAll(
+                `input[type="checkbox"][data-config="${configIndex}"][data-category="${category}"][value]:not([data-field])`
+            );
+            checkboxes.forEach(cb => cb.checked = true);
+            updateCategoryCounter(configIndex, category);
+        }
+
+        function deselectAllCategoryAttributes(configIndex, category) {
+            // Only deselect attribute checkboxes (those with value attribute but no data-field)
+            const checkboxes = document.querySelectorAll(
+                `input[type="checkbox"][data-config="${configIndex}"][data-category="${category}"][value]:not([data-field])`
+            );
+            checkboxes.forEach(cb => cb.checked = false);
+            updateCategoryCounter(configIndex, category);
+        }
+
+        function updateCategoryCounter(configIndex, category) {
+            // Only count attribute checkboxes (those with value attribute but no data-field)
+            const checkboxes = document.querySelectorAll(
+                `input[type="checkbox"][data-config="${configIndex}"][data-category="${category}"][value]:not([data-field]):checked`
+            );
+            const counter = document.getElementById(`counter_${configIndex}_${category}`);
+            if (counter) {
+                counter.textContent = `${checkboxes.length} selected`;
+            }
+        }
+
+        // ==================== STEP 4: GENERATE JSON ====================
+
+        function generateAndPreviewJSON() {
+            const config = buildConfigurationJSON();
+            const jsonString = JSON.stringify(config, null, 2);
+            const highlighted = highlightJSON(jsonString);
+            document.getElementById('jsonPreview').innerHTML = highlighted;
+            appState.configData = config;
+        }
+
+        function buildConfigurationJSON() {
+            const storeId = document.getElementById('storeId').value.trim();
+            const taxonomyId = document.getElementById('taxonomyId').value.trim();
+            const defaultLocale = document.getElementById('defaultLocale').value.trim();
+            const defaultService = document.getElementById('defaultService').value;
+
+            const generationConfigs = appState.selectedContentTypes.map((contentType, index) => {
+                const productFieldName = CONTENT_TYPES_DATA[contentType].productFieldName;
+
+                // Get form values
+                const active = document.querySelector(`[data-config="${index}"][data-field="active"]`).checked;
+                const prompt = document.querySelector(`[data-config="${index}"][data-field="prompt"]`).value;
+                const attributesToUsePrefix = document.querySelector(`[data-config="${index}"][data-field="attributesToUsePrefix"]`).value;
+                const suffix = document.querySelector(`[data-config="${index}"][data-field="suffix"]`).value;
+                const minRequiredAttributes = parseInt(document.querySelector(`[data-config="${index}"][data-field="minRequiredAttributes"]`).value);
+                const responseInJson = document.querySelector(`[data-config="${index}"][data-field="responseInJson"]`).checked;
+                const generationStrategy = document.querySelector(`[data-config="${index}"][data-field="generationStrategy"]`).value;
+
+                // Get selected attributes per category
+                const categories = {};
+                Object.keys(appState.categoryAttributes).forEach(category => {
+                    const categoryId = category.replace(/[^a-zA-Z0-9]/g, '_');
+                    const selectedAttrs = [];
+                    const attrCheckboxes = document.querySelectorAll(
+                        `input[type="checkbox"][data-config="${index}"][data-category="${category}"][value]`
+                    );
+                    attrCheckboxes.forEach(cb => {
+                        if (cb.checked) selectedAttrs.push(cb.value);
+                    });
+
+                    // Check if category is active
+                    const categoryActive = document.getElementById(`categoryActive_${index}_${categoryId}`)?.checked || true;
+
+                    // Check if custom prompt is enabled for this category
+                    const promptEnabled = document.getElementById(`enablePrompt_${index}_${categoryId}`)?.checked || false;
+
+                    let systemPromptSimple = {};
+                    if (promptEnabled) {
+                        const categoryPrompt = document.querySelector(`[data-config="${index}"][data-category="${category}"][data-field="categoryPrompt"]`)?.value || "";
+                        const categoryPrefix = document.querySelector(`[data-config="${index}"][data-category="${category}"][data-field="categoryPrefix"]`)?.value || "";
+                        const categorySuffix = document.querySelector(`[data-config="${index}"][data-category="${category}"][data-field="categorySuffix"]`)?.value || "";
+
+                        systemPromptSimple = {
+                            prompt: categoryPrompt,
+                            attributesToUsePrefix: categoryPrefix,
+                            suffix: categorySuffix
+                        };
+                    }
+
+                    categories[category] = {
+                        active: categoryActive,
+                        systemPromptSimple: systemPromptSimple,
+                        fallbackToParentPrompt: false,
+                        attributesToUse: selectedAttrs
+                    };
+                });
+
+                return {
+                    active: active,
+                    systemPromptSimple: {
+                        prompt: prompt,
+                        attributesToUsePrefix: attributesToUsePrefix,
+                        suffix: suffix
+                    },
+                    responseInJson: responseInJson,
+                    fallbackToParentPrompt: false,
+                    minimumRequiredAttributesCount: minRequiredAttributes,
+                    responseFields: [{
+                        fieldName: contentType.toLowerCase().replace(/\s+/g, ''),
+                        productFieldName: productFieldName,
+                        conditions: []
+                    }],
+                    productDataFieldsToUse: [],
+                    categories: categories,
+                    fetchSheetContent: false,
+                    sheetUrl: "",
+                    generationStrategy: generationStrategy,
+                    strategyOptions: {}
+                };
+            });
+
+            return {
+                storeId: storeId,
+                supportedProducts: appState.supportedProducts || [],
+                active: true,
+                allowedServices: [defaultService],
+                defaultLocale: defaultLocale,
+                defaultService: defaultService,
+                generationConfigs: generationConfigs,
+                storeDefaultPromptConfig: {},
+                allowCachedRecords: true,
+                taxonomyId: taxonomyId
+            };
+        }
+
+        function highlightJSON(json) {
+            return json
+                .replace(/(".*?"):/g, '<span class="json-key">$1</span>:')
+                .replace(/: "(.+?)"/g, ': <span class="json-string">"$1"</span>')
+                .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>');
+        }
+
+        function downloadConfig() {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+            const storeId = appState.configData.storeId || 'store';
+            const filename = `content-config-${storeId}-${timestamp}.json`;
+
+            const blob = new Blob([JSON.stringify(appState.configData, null, 2)], {
+                type: 'application/json'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ==================== START OVER ====================
+
+        function startOver() {
+            const confirmed = confirm('⚠️ Are you sure you want to start over?\n\nThis will clear all your progress and reset the application to the beginning.\n\nAll unsaved data will be lost!');
+
+            if (confirmed) {
+                // Reload the page to reset everything
+                window.location.reload();
+            }
+        }
+
+        // ==================== INITIALIZE ====================
+
+        initializeApp();
+    </script>
+</body>
+</html>
